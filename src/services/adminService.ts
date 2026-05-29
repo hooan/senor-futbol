@@ -1,161 +1,160 @@
-import type { News, CreateNewsInput, UpdateNewsInput, User } from '@/types/database'
-import { mockNews } from '@/data/mockNews'
-
-// Simulate API delay
-const delay = (ms: number = 500) => new Promise((resolve) => setTimeout(resolve, ms))
-
-// In-memory storage for demo (in real app, this would be Supabase)
-let newsStore = [...mockNews]
-let newsIdCounter = mockNews.length + 1
-
-// Mock admin user for testing
-const mockAdminUser: User = {
-  id: 'admin-1',
-  username: 'admin',
-  avatar_url: null,
-  is_admin: true,
-  created_at: new Date().toISOString(),
-}
+import type { News, CreateNewsInput, UpdateNewsInput, User, NewsWithAuthor } from '@/types/database'
+import { supabase } from '@/lib/supabaseClient'
 
 // Admin Service
 export const adminService = {
   // ============= NEWS MANAGEMENT =============
 
   // Get all news (including unpublished)
-  async getAllNews(): Promise<News[]> {
-    await delay()
-    return newsStore.map((news) => ({
-      ...news,
-      author: mockAdminUser,
-    }))
+  async getAllNews(): Promise<NewsWithAuthor[]> {
+    const { data, error } = await supabase
+      .from('news')
+      .select(`
+        *,
+        author:users(id, username, avatar_url)
+      `)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return (data || []) as NewsWithAuthor[]
   },
 
   // Create news article
   async createNews(userId: string, input: CreateNewsInput): Promise<News> {
-    await delay()
+    const { data, error } = await supabase
+      .from('news')
+      .insert({
+        title: input.title,
+        content: input.content,
+        excerpt: input.excerpt || null,
+        author_id: userId,
+        cover_image_url: input.cover_image_url || null,
+        is_published: input.is_published,
+        published_at: input.is_published ? new Date().toISOString() : null,
+      })
+      .select()
+      .single()
 
-    const newArticle: News = {
-      id: `news-${newsIdCounter++}`,
-      title: input.title,
-      content: input.content,
-      excerpt: input.excerpt || null,
-      author_id: userId,
-      cover_image_url: input.cover_image_url || null,
-      is_published: input.is_published,
-      published_at: input.is_published ? new Date().toISOString() : null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      author: mockAdminUser,
-    }
-
-    newsStore.unshift(newArticle)
-    return newArticle
+    if (error) throw error
+    return data as News
   },
 
   // Update news article
   async updateNews(input: UpdateNewsInput): Promise<News> {
-    await delay()
+    // First get the current article to check publish status
+    const { data: currentArticle, error: fetchError } = await supabase
+      .from('news')
+      .select('is_published')
+      .eq('id', input.id)
+      .single()
 
-    const index = newsStore.findIndex((n) => n.id === input.id)
-    if (index === -1) {
-      throw new Error('Article not found')
-    }
+    if (fetchError) throw fetchError
 
-    const article = newsStore[index]
-    const wasUnpublished = !article.is_published
+    const wasUnpublished = !currentArticle.is_published
     const nowPublished = input.is_published === true
 
-    const updatedArticle: News = {
-      ...article,
-      title: input.title !== undefined ? input.title : article.title,
-      content: input.content !== undefined ? input.content : article.content,
-      excerpt: input.excerpt !== undefined ? input.excerpt : article.excerpt,
-      cover_image_url:
-        input.cover_image_url !== undefined ? input.cover_image_url : article.cover_image_url,
-      is_published: input.is_published !== undefined ? input.is_published : article.is_published,
-      published_at:
-        wasUnpublished && nowPublished ? new Date().toISOString() : article.published_at,
+    const updates: any = {
       updated_at: new Date().toISOString(),
     }
 
-    newsStore[index] = updatedArticle
-    return updatedArticle
+    if (input.title !== undefined) updates.title = input.title
+    if (input.content !== undefined) updates.content = input.content
+    if (input.excerpt !== undefined) updates.excerpt = input.excerpt
+    if (input.cover_image_url !== undefined) updates.cover_image_url = input.cover_image_url
+    if (input.is_published !== undefined) updates.is_published = input.is_published
+
+    // Set published_at if publishing for the first time
+    if (wasUnpublished && nowPublished) {
+      updates.published_at = new Date().toISOString()
+    }
+
+    const { data, error } = await supabase
+      .from('news')
+      .update(updates)
+      .eq('id', input.id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as News
   },
 
   // Delete news article
   async deleteNews(id: string): Promise<void> {
-    await delay()
+    const { error } = await supabase
+      .from('news')
+      .delete()
+      .eq('id', id)
 
-    const index = newsStore.findIndex((n) => n.id === id)
-    if (index === -1) {
-      throw new Error('Article not found')
-    }
-
-    newsStore.splice(index, 1)
+    if (error) throw error
   },
 
   // Toggle publish status
   async togglePublish(id: string): Promise<News> {
-    await delay()
+    // Get current article
+    const { data: currentArticle, error: fetchError } = await supabase
+      .from('news')
+      .select('is_published, published_at')
+      .eq('id', id)
+      .single()
 
-    const index = newsStore.findIndex((n) => n.id === id)
-    if (index === -1) {
-      throw new Error('Article not found')
-    }
+    if (fetchError) throw fetchError
 
-    const article = newsStore[index]
-    const updatedArticle: News = {
-      ...article,
-      is_published: !article.is_published,
-      published_at: !article.is_published ? new Date().toISOString() : article.published_at,
+    const newPublishStatus = !currentArticle.is_published
+    const updates: any = {
+      is_published: newPublishStatus,
       updated_at: new Date().toISOString(),
     }
 
-    newsStore[index] = updatedArticle
-    return updatedArticle
+    // Set published_at if publishing for the first time
+    if (newPublishStatus && !currentArticle.published_at) {
+      updates.published_at = new Date().toISOString()
+    }
+
+    const { data, error } = await supabase
+      .from('news')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as News
   },
 
   // ============= USER MANAGEMENT =============
 
   // Get all users (admin only)
   async getAllUsers(): Promise<User[]> {
-    await delay()
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-    // In real app, would query Supabase users table
-    // For now, return mock data
-    return [
-      mockAdminUser,
-      {
-        id: 'user-1',
-        username: 'futbolero',
-        avatar_url: null,
-        is_admin: false,
-        created_at: '2026-05-01T00:00:00Z',
-      },
-      {
-        id: 'user-2',
-        username: 'predictor_pro',
-        avatar_url: null,
-        is_admin: false,
-        created_at: '2026-05-02T00:00:00Z',
-      },
-      {
-        id: 'user-3',
-        username: 'soccer_fan',
-        avatar_url: null,
-        is_admin: false,
-        created_at: '2026-05-03T00:00:00Z',
-      },
-    ]
+    if (error) throw error
+    return (data || []) as User[]
   },
 
   // Toggle admin status
-  async toggleAdmin(_userId: string): Promise<User> {
-    await delay()
+  async toggleAdmin(userId: string): Promise<User> {
+    // Get current user
+    const { data: currentUser, error: fetchError } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', userId)
+      .single()
 
-    // In real app, would update Supabase user metadata
-    // For now, just simulate
-    throw new Error('Admin toggle not implemented in mock mode')
+    if (fetchError) throw fetchError
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ is_admin: !currentUser.is_admin })
+      .eq('id', userId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as User
   },
 
   // Get user stats
@@ -165,9 +164,12 @@ export const adminService = {
     regular: number
     recentSignups: number
   }> {
-    await delay()
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('is_admin, created_at')
 
-    const users = await this.getAllUsers()
+    if (error) throw error
+
     const now = new Date()
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
@@ -189,14 +191,27 @@ export const adminService = {
     totalUsers: number
     totalQuinielas: number
   }> {
-    await delay()
+    const [newsResult, usersResult, quinielasResult] = await Promise.all([
+      supabase.from('news').select('is_published', { count: 'exact', head: true }),
+      supabase.from('users').select('id', { count: 'exact', head: true }),
+      supabase.from('quinielas').select('id', { count: 'exact', head: true }),
+    ])
+
+    if (newsResult.error) throw newsResult.error
+    if (usersResult.error) throw usersResult.error
+    if (quinielasResult.error) throw quinielasResult.error
+
+    // Get published vs draft counts
+    const { data: allNews } = await supabase.from('news').select('is_published')
+    const publishedCount = allNews?.filter((n) => n.is_published).length || 0
+    const draftCount = allNews?.filter((n) => !n.is_published).length || 0
 
     return {
-      totalNews: newsStore.length,
-      publishedNews: newsStore.filter((n) => n.is_published).length,
-      draftNews: newsStore.filter((n) => !n.is_published).length,
-      totalUsers: 4, // From mock users
-      totalQuinielas: 4, // From mock quinielas
+      totalNews: newsResult.count || 0,
+      publishedNews: publishedCount,
+      draftNews: draftCount,
+      totalUsers: usersResult.count || 0,
+      totalQuinielas: quinielasResult.count || 0,
     }
   },
 }

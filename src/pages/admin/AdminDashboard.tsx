@@ -166,6 +166,25 @@ export default function AdminDashboard() {
                 </div>
               </button>
             </Link>
+
+            <Link to="/admin/news-sources">
+              <button className="w-full p-6 border-thick border-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-left group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-orange-600 text-white flex items-center justify-center border-thick border-orange-700 group-hover:bg-white group-hover:text-orange-600">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                      <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-lg uppercase">News Sources</div>
+                    <div className="text-sm text-gray-600 group-hover:text-gray-300">
+                      Manage automated news fetching
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </Link>
           </div>
         </Card>
 

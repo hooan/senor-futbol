@@ -35,6 +35,7 @@ import AdminNews from '@/pages/admin/AdminNews'
 import AdminNewsForm from '@/pages/admin/AdminNewsForm'
 import AdminUsers from '@/pages/admin/AdminUsers'
 import AdminTournaments from '@/pages/admin/AdminTournaments'
+import AdminNewsSources from '@/pages/admin/AdminNewsSources'
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -123,6 +124,11 @@ function App() {
             <Route path="admin/tournaments" element={
               <AdminRoute>
                 <AdminTournaments />
+              </AdminRoute>
+            } />
+            <Route path="admin/news-sources" element={
+              <AdminRoute>
+                <AdminNewsSources />
               </AdminRoute>
             } />
             

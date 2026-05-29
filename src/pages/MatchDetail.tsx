@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 import { useMatchDetail } from '@/hooks/useMatchDetail'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
@@ -7,6 +8,7 @@ import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 
 export default function MatchDetail() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { fixture, events, lineups, statistics, isLoading } = useMatchDetail(id!)
@@ -14,7 +16,7 @@ export default function MatchDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center">
-        <Loading size="large" text="Loading match details..." />
+        <Loading size="large" text={t('fixtures.loadingMatchDetails')} />
       </div>
     )
   }
@@ -23,8 +25,8 @@ export default function MatchDetail() {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center">
         <div className="text-center">
-          <p className="font-headline text-2xl uppercase mb-4">MATCH NOT FOUND</p>
-          <Button onClick={() => navigate('/fixtures')}>BACK TO FIXTURES</Button>
+          <p className="font-headline text-2xl uppercase mb-4">{t('fixtures.matchNotFound')}</p>
+          <Button onClick={() => navigate('/fixtures')}>{t('fixtures.backToFixtures')}</Button>
         </div>
       </div>
     )
@@ -37,13 +39,13 @@ export default function MatchDetail() {
   const getStatusBadge = () => {
     switch (fixture.status) {
       case 'NS':
-        return <Badge variant="default">NOT STARTED</Badge>
+        return <Badge variant="default">{t('fixtures.status.notStarted')}</Badge>
       case 'LIVE':
-        return <Badge variant="error">LIVE</Badge>
+        return <Badge variant="error">{t('fixtures.status.live')}</Badge>
       case 'HT':
-        return <Badge variant="warning">HALF TIME</Badge>
+        return <Badge variant="warning">{t('fixtures.status.halfTime')}</Badge>
       case 'FT':
-        return <Badge variant="success">FULL TIME</Badge>
+        return <Badge variant="success">{t('fixtures.status.fullTime')}</Badge>
       default:
         return <Badge variant="default">{fixture.status}</Badge>
     }
@@ -67,7 +69,7 @@ export default function MatchDetail() {
       <section className="border-b-thick border-raw-black bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Button onClick={() => navigate('/fixtures')} size="small" className="mb-4">
-            ← BACK TO FIXTURES
+            ← {t('fixtures.backToFixtures')}
           </Button>
 
           <div className="flex items-center justify-between mb-4">
@@ -84,7 +86,7 @@ export default function MatchDetail() {
             {fixture.group_name && (
               <>
                 <span>•</span>
-                <span>GROUP {fixture.group_name}</span>
+                <span>{t('fixtures.group').toUpperCase()} {fixture.group_name}</span>
               </>
             )}
             {fixture.venue && (
@@ -96,7 +98,7 @@ export default function MatchDetail() {
             {fixture.referee && (
               <>
                 <span>•</span>
-                <span>Referee: {fixture.referee}</span>
+                <span>{t('fixtures.referee')}: {fixture.referee}</span>
               </>
             )}
           </div>
@@ -143,7 +145,7 @@ export default function MatchDetail() {
         {/* Events Timeline */}
         {events.length > 0 && (
           <Card variant="elevated" className="mb-8">
-            <h3 className="font-headline text-2xl uppercase mb-6">MATCH EVENTS</h3>
+            <h3 className="font-headline text-2xl uppercase mb-6">{t('fixtures.matchEvents')}</h3>
 
             <div className="space-y-4">
               {events.map((event) => {
@@ -177,7 +179,7 @@ export default function MatchDetail() {
                       <p className="text-sm font-mono text-gray-600">{event.detail}</p>
 
                       {event.assist_name && (
-                        <p className="text-xs font-mono text-gray-500 mt-1">Assist: {event.assist_name}</p>
+                        <p className="text-xs font-mono text-gray-500 mt-1">{t('fixtures.assist')}: {event.assist_name}</p>
                       )}
 
                       {event.comments && (
@@ -198,7 +200,7 @@ export default function MatchDetail() {
         {/* Lineups */}
         {lineups.length > 0 && (
           <Card variant="elevated" className="mb-8">
-            <h3 className="font-headline text-2xl uppercase mb-6">LINEUPS</h3>
+            <h3 className="font-headline text-2xl uppercase mb-6">{t('fixtures.lineups').toUpperCase()}</h3>
 
             <div className="grid md:grid-cols-2 gap-8">
               {/* Home Team Lineup */}
@@ -232,7 +234,7 @@ export default function MatchDetail() {
 
                 {/* Substitutes */}
                 <div>
-                  <p className="font-mono text-xs uppercase text-gray-600 mb-3">SUBSTITUTES</p>
+                  <p className="font-mono text-xs uppercase text-gray-600 mb-3">{t('fixtures.substitutesLabel')}</p>
                   <div className="space-y-2">
                     {homeLineups
                       .filter((l) => !l.is_starter)
@@ -262,7 +264,7 @@ export default function MatchDetail() {
 
                 {/* Starting XI */}
                 <div className="mb-6">
-                  <p className="font-mono text-xs uppercase text-gray-600 mb-3">STARTING XI</p>
+                  <p className="font-mono text-xs uppercase text-gray-600 mb-3">{t('fixtures.startingXI')}</p>
                   <div className="space-y-2">
                     {awayLineups
                       .filter((l) => l.is_starter)
@@ -280,7 +282,7 @@ export default function MatchDetail() {
 
                 {/* Substitutes */}
                 <div>
-                  <p className="font-mono text-xs uppercase text-gray-600 mb-3">SUBSTITUTES</p>
+                  <p className="font-mono text-xs uppercase text-gray-600 mb-3">{t('fixtures.substitutesLabel')}</p>
                   <div className="space-y-2">
                     {awayLineups
                       .filter((l) => !l.is_starter)
@@ -303,7 +305,7 @@ export default function MatchDetail() {
         {/* Statistics */}
         {statistics.length > 0 && (
           <Card variant="elevated" className="mb-8">
-            <h3 className="font-headline text-2xl uppercase mb-6">MATCH STATISTICS</h3>
+            <h3 className="font-headline text-2xl uppercase mb-6">{t('fixtures.matchStatistics')}</h3>
 
             <div className="space-y-6">
               {/* Get unique stat types */}
@@ -357,11 +359,11 @@ export default function MatchDetail() {
         {events.length === 0 && lineups.length === 0 && statistics.length === 0 && (
           <Card variant="elevated">
             <div className="text-center py-12">
-              <p className="font-body text-xl text-gray-600 mb-2">No detailed match data available</p>
+              <p className="font-body text-xl text-gray-600 mb-2">{t('fixtures.noDetailedData')}</p>
               <p className="font-body text-sm text-gray-500">
                 {fixture.status === 'NS'
-                  ? 'Match has not started yet'
-                  : 'Detailed statistics will be available after the match'}
+                  ? t('fixtures.matchNotStartedYet')
+                  : t('fixtures.detailedStatsAfterMatch')}
               </p>
             </div>
           </Card>

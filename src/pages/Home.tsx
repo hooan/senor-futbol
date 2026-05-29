@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useLatestNews } from '@/hooks/useNews'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -6,6 +7,7 @@ import NewsCard from '@/components/news/NewsCard'
 import Loading from '@/components/ui/Loading'
 
 export default function Home() {
+  const { t } = useTranslation()
   const { data: latestNews, isLoading: newsLoading } = useLatestNews(3)
   
   return (
@@ -15,21 +17,20 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="max-w-4xl">
             <h1 className="font-headline text-6xl md:text-8xl leading-none mb-6 uppercase tracking-tight">
-              FIFA WORLD CUP 2026
+              {t('home.title')}
             </h1>
             <p className="font-body text-xl leading-relaxed mb-8">
-              Your ultimate source for World Cup 2026 news, fixtures, standings, and quinielas. 
-              Create betting pools, compete with friends, and follow every match.
+              {t('home.subtitle')}
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/fixtures/today">
                 <Button variant="primary" size="large">
-                  TODAY'S MATCHES
+                  {t('home.todayMatches')}
                 </Button>
               </Link>
               <Link to="/quinielas/create">
                 <Button variant="secondary" size="large">
-                  CREATE QUINIELA
+                  {t('home.createQuiniela')}
                 </Button>
               </Link>
             </div>
@@ -43,19 +44,19 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <div className="font-headline text-4xl mb-2">32</div>
-              <div className="font-body text-sm uppercase tracking-wider">TEAMS</div>
+              <div className="font-body text-sm uppercase tracking-wider">{t('home.teams')}</div>
             </Card>
             <Card>
               <div className="font-headline text-4xl mb-2">64</div>
-              <div className="font-body text-sm uppercase tracking-wider">MATCHES</div>
+              <div className="font-body text-sm uppercase tracking-wider">{t('home.matches')}</div>
             </Card>
             <Card>
               <div className="font-headline text-4xl mb-2">16</div>
-              <div className="font-body text-sm uppercase tracking-wider">HOST CITIES</div>
+              <div className="font-body text-sm uppercase tracking-wider">{t('home.hostCities')}</div>
             </Card>
             <Card>
               <div className="font-headline text-4xl mb-2">3</div>
-              <div className="font-body text-sm uppercase tracking-wider">COUNTRIES</div>
+              <div className="font-body text-sm uppercase tracking-wider">{t('home.countries')}</div>
             </Card>
           </div>
         </div>
@@ -66,16 +67,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <h2 className="font-headline text-4xl uppercase tracking-tight">
-              LATEST NEWS
+              {t('home.latestNews')}
             </h2>
             <Link to="/news">
-              <Button variant="ghost">View All →</Button>
+              <Button variant="ghost">{t('home.viewAll')} →</Button>
             </Link>
           </div>
           
           {newsLoading ? (
             <div className="flex justify-center py-12">
-              <Loading size="medium" text="Loading news..." />
+              <Loading size="medium" text={t('common.loading')} />
             </div>
           ) : latestNews && latestNews.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -86,29 +87,29 @@ export default function Home() {
           ) : null}
           
           <h2 className="font-headline text-4xl mb-12 uppercase tracking-tight">
-            FEATURES
+            {t('home.features')}
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8">
             {/* Fixtures Preview */}
             <Card>
-              <h3 className="font-headline text-2xl mb-4 uppercase">FIXTURES & RESULTS</h3>
+              <h3 className="font-headline text-2xl mb-4 uppercase">{t('home.fixturesTitle')}</h3>
               <p className="font-body mb-6">
-                Follow all 64 World Cup matches from group stage to the final. Get live updates, scores, and match schedules.
+                {t('home.fixturesDesc')}
               </p>
               <Link to="/fixtures" className="font-body font-semibold uppercase text-sm text-raw-blue hover:underline">
-                VIEW FIXTURES →
+                {t('home.viewFixtures')} →
               </Link>
             </Card>
 
             {/* Quinielas Preview */}
             <Card className="bg-raw-black text-raw-white">
-              <h3 className="font-headline text-2xl mb-4 uppercase">QUINIELAS</h3>
+              <h3 className="font-headline text-2xl mb-4 uppercase">{t('quinielas.title')}</h3>
               <p className="font-body mb-6">
-                Create prediction pools, compete with friends, and climb the leaderboard. No registration required to join!
+                {t('home.quinielasDesc')}
               </p>
               <Link to="/quinielas" className="font-body font-semibold uppercase text-sm text-raw-white hover:underline">
-                EXPLORE QUINIELAS →
+                {t('home.exploreQuinielas')} →
               </Link>
             </Card>
           </div>

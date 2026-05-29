@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuiniela, useQuinielaFixtures, useUserPredictions, useMakePrediction } from '@/hooks/useQuinielas'
 import { useAuth } from '@/contexts/AuthContext'
 import Button from '@/components/ui/Button'
@@ -18,6 +19,7 @@ interface PredictionFormData {
 }
 
 export default function Predictions() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
   
@@ -72,7 +74,7 @@ export default function Predictions() {
     const prediction = predictions[fixtureId]
 
     if (!prediction || prediction.home_score === '' || prediction.away_score === '') {
-      setError('Please enter both scores')
+      setError(t('quinielas.pleaseEnterBothScores'))
       return
     }
 
@@ -80,7 +82,7 @@ export default function Predictions() {
     const awayScore = parseInt(prediction.away_score, 10)
 
     if (isNaN(homeScore) || isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
-      setError('Please enter valid scores (0 or greater)')
+      setError(t('quinielas.pleaseEnterValidScores'))
       return
     }
 
@@ -103,7 +105,7 @@ export default function Predictions() {
       setSavedFixtures((prev) => new Set(prev).add(fixtureId))
       setError('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save prediction')
+      setError(err instanceof Error ? err.message : t('quinielas.failedToSavePrediction'))
     } finally {
       setSavingFixtureId(null)
     }
@@ -166,10 +168,10 @@ export default function Predictions() {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center px-4">
         <Card className="max-w-md text-center">
-          <h2 className="font-headline text-2xl uppercase mb-4">QUINIELA NOT FOUND</h2>
-          <p className="text-gray-700 mb-6">Unable to load quiniela details.</p>
+          <h2 className="font-headline text-2xl uppercase mb-4">{t('quinielas.quinielaNotFound').toUpperCase()}</h2>
+          <p className="text-gray-700 mb-6">{t('quinielas.unableToLoad')}</p>
           <Link to="/quinielas">
-            <Button>BACK TO QUINIELAS</Button>
+            <Button>{t('quinielas.backToQuinielas').toUpperCase()}</Button>
           </Link>
         </Card>
       </div>
@@ -189,14 +191,14 @@ export default function Predictions() {
             <div>
               <h1 className="font-headline text-3xl uppercase mb-2">{quiniela.name}</h1>
               <div className="flex items-center gap-3 text-sm text-gray-300">
-                <span className="font-mono">Predictions</span>
+                <span className="font-mono">{t('quinielas.predictions')}</span>
                 <span>•</span>
-                <span>{stats.saved} / {stats.total} saved</span>
+                <span>{stats.saved} / {stats.total} {t('quinielas.saved').toLowerCase()}</span>
               </div>
             </div>
             <Link to={`/quinielas/${quiniela.share_code}`}>
               <Button variant="secondary" size="small">
-                ← BACK
+                ← {t('common.back').toUpperCase()}
               </Button>
             </Link>
           </div>
@@ -209,15 +211,15 @@ export default function Predictions() {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-3xl font-headline mb-1">{stats.total}</div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Total Matches</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.totalMatches')}</div>
             </div>
             <div>
               <div className="text-3xl font-headline text-green-600 mb-1">{stats.saved}</div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Saved</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.saved')}</div>
             </div>
             <div>
               <div className="text-3xl font-headline text-yellow-600 mb-1">{stats.pending}</div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Pending</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.pending')}</div>
             </div>
           </div>
         </Card>
@@ -234,9 +236,9 @@ export default function Predictions() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-red-900 mb-1">Deadline Has Passed</h3>
+                <h3 className="font-semibold text-red-900 mb-1">{t('quinielas.deadlineHasPassed')}</h3>
                 <p className="text-red-800 text-sm">
-                  Predictions are locked. You can view your predictions but cannot make changes.
+                  {t('quinielas.deadlinePassedPredictions')}
                 </p>
               </div>
             </div>
@@ -252,9 +254,9 @@ export default function Predictions() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-blue-900 mb-1">Make Your Predictions</h3>
+                <h3 className="font-semibold text-blue-900 mb-1">{t('quinielas.makePredictionsPrompt')}</h3>
                 <p className="text-blue-800 text-sm">
-                  Deadline: {format(new Date(quiniela.deadline), 'MMM d, yyyy h:mm a')}. You can update predictions anytime before each match starts.
+                  {t('quinielas.makePredictionsDeadline', { deadline: format(new Date(quiniela.deadline), 'MMM d, yyyy h:mm a') })}
                 </p>
               </div>
             </div>
@@ -292,13 +294,13 @@ export default function Predictions() {
                             {format(new Date(fixture.match_date), 'MMM d, h:mm a')}
                           </span>
                           {fixture.status === 'FT' && (
-                            <Badge variant="default">FINAL</Badge>
+                            <Badge variant="default">{t('quinielas.final').toUpperCase()}</Badge>
                           )}
                           {fixture.status === 'LIVE' && (
-                            <Badge variant="error">LIVE</Badge>
+                            <Badge variant="error">{t('quinielas.live').toUpperCase()}</Badge>
                           )}
                           {isLocked && fixture.status === 'NS' && (
-                            <Badge variant="warning">LOCKED</Badge>
+                            <Badge variant="warning">{t('quinielas.locked').toUpperCase()}</Badge>
                           )}
                         </div>
 
@@ -341,7 +343,7 @@ export default function Predictions() {
                         {pointsEarned !== null && (
                           <div className="mt-3 inline-flex items-center gap-2 bg-yellow-100 border-3 border-yellow-600 px-3 py-1">
                             <span className="font-headline text-lg text-yellow-600">{pointsEarned}</span>
-                            <span className="text-xs uppercase font-semibold text-yellow-700">POINTS EARNED</span>
+                            <span className="text-xs uppercase font-semibold text-yellow-700">{t('quinielas.pointsEarned').toUpperCase()}</span>
                           </div>
                         )}
                       </div>
@@ -376,13 +378,13 @@ export default function Predictions() {
                             disabled={isSaving || pred.home_score === '' || pred.away_score === ''}
                             size="small"
                           >
-                            {isSaving ? '...' : status === 'saved' ? '✓ SAVED' : 'SAVE'}
+                            {isSaving ? '...' : status === 'saved' ? `✓ ${t('quinielas.saved').toUpperCase()}` : t('common.save').toUpperCase()}
                           </Button>
                         )}
 
                         {status === 'saved' && !isSaving && (
                           <div className="hidden sm:block text-green-600 text-sm font-semibold">
-                            ✓ Saved
+                            ✓ {t('quinielas.saved')}
                           </div>
                         )}
                       </div>
@@ -399,12 +401,12 @@ export default function Predictions() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to={`/quinielas/${quiniela.id}/leaderboard`}>
               <Button variant="secondary" size="large">
-                VIEW LEADERBOARD
+                {t('quinielas.viewLeaderboard').toUpperCase()}
               </Button>
             </Link>
             <Link to={`/quinielas/${quiniela.share_code}`}>
               <Button variant="secondary" size="large">
-                QUINIELA DETAILS
+                {t('quinielas.quinielaDetails').toUpperCase()}
               </Button>
             </Link>
           </div>

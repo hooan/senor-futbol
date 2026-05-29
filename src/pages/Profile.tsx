@@ -1,11 +1,13 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 import Badge from '@/components/ui/Badge'
 
 export default function Profile() {
+  const { t } = useTranslation()
   const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
 
@@ -17,7 +19,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center">
-        <Loading size="large" text="Loading profile..." />
+        <Loading size="large" text={t('auth.loadingProfile')} />
       </div>
     )
   }
@@ -41,10 +43,10 @@ export default function Profile() {
       <section className="border-b-thick border-raw-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="font-headline text-5xl md:text-6xl uppercase mb-4">
-            PROFILE
+            {t('auth.profile').toUpperCase()}
           </h1>
           <p className="font-body text-lg text-gray-700">
-            Manage your account and preferences
+            {t('auth.manageAccount')}
           </p>
         </div>
       </section>
@@ -56,36 +58,36 @@ export default function Profile() {
             {/* Account Information */}
             <Card variant="elevated">
               <h2 className="font-headline text-2xl uppercase mb-6">
-                ACCOUNT INFO
+                {t('auth.accountInfo').toUpperCase()}
               </h2>
               
               <div className="space-y-4">
                 <div>
                   <label className="font-mono text-xs uppercase text-gray-600 block mb-1">
-                    Username
+                    {t('auth.username')}
                   </label>
                   <p className="font-body text-lg font-semibold">{username}</p>
                 </div>
 
                 <div>
                   <label className="font-mono text-xs uppercase text-gray-600 block mb-1">
-                    Email
+                    {t('auth.email')}
                   </label>
                   <p className="font-body text-lg">{email}</p>
                 </div>
 
                 <div>
                   <label className="font-mono text-xs uppercase text-gray-600 block mb-1">
-                    Member Since
+                    {t('auth.memberSince')}
                   </label>
                   <p className="font-body text-lg">{createdAt}</p>
                 </div>
 
                 <div>
                   <label className="font-mono text-xs uppercase text-gray-600 block mb-1">
-                    Status
+                    {t('auth.status')}
                   </label>
-                  <Badge variant="success">Active</Badge>
+                  <Badge variant="success">{t('auth.active')}</Badge>
                 </div>
               </div>
             </Card>
@@ -94,7 +96,7 @@ export default function Profile() {
             <div className="space-y-6">
               <Card>
                 <h3 className="font-headline text-xl uppercase mb-4">
-                  QUICK ACTIONS
+                  {t('admin.quickActions').toUpperCase()}
                 </h3>
                 <div className="space-y-3">
                   <Button 
@@ -102,28 +104,28 @@ export default function Profile() {
                     className="w-full"
                     onClick={() => navigate('/quinielas/create')}
                   >
-                    Create Quiniela
+                    {t('quinielas.create')}
                   </Button>
                   <Button 
                     variant="secondary" 
                     className="w-full"
                     onClick={() => navigate('/quinielas')}
                   >
-                    My Quinielas
+                    {t('quinielas.myQuinielas')}
                   </Button>
                 </div>
               </Card>
 
               <Card className="border-raw-red">
                 <h3 className="font-headline text-xl uppercase mb-4 text-raw-red">
-                  DANGER ZONE
+                  {t('auth.dangerZone').toUpperCase()}
                 </h3>
                 <Button 
                   variant="destructive" 
                   className="w-full"
                   onClick={handleSignOut}
                 >
-                  Sign Out
+                  {t('auth.signOut')}
                 </Button>
               </Card>
             </div>

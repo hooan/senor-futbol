@@ -82,6 +82,9 @@ export interface News {
   created_at: string
   updated_at: string
   is_published: boolean
+  language: string // 'en' or 'es'
+  source_name: string | null // Name of the source (NewsAPI, GNews, or author name)
+  source_url: string | null // Original article URL
   // Joined data
   author?: User
 }

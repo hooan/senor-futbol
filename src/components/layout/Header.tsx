@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
+import LanguageSelector from '@/components/LanguageSelector'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user } = useAuth()
+  const { t } = useTranslation()
 
   return (
     <header className="bg-raw-white border-b-thick border-raw-black">
@@ -18,32 +21,35 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             <Link to="/news" className="font-body font-semibold uppercase tracking-wide text-sm hover:underline">
-              NEWS
+              {t('nav.news')}
             </Link>
             <Link to="/fixtures" className="font-body font-semibold uppercase tracking-wide text-sm hover:underline">
-              FIXTURES
+              {t('nav.fixtures')}
             </Link>
             <Link to="/standings" className="font-body font-semibold uppercase tracking-wide text-sm hover:underline">
-              STANDINGS
+              {t('nav.standings')}
             </Link>
             <Link to="/quinielas" className="font-body font-semibold uppercase tracking-wide text-sm hover:underline">
-              QUINIELAS
+              {t('nav.quinielas')}
             </Link>
+            
+            <LanguageSelector />
+            
             {user ? (
               <Link 
                 to="/profile" 
                 className="px-6 py-2 bg-raw-black text-raw-white border-thick border-raw-black uppercase text-sm font-semibold tracking-wider hover:bg-raw-white hover:text-raw-black transition-colors"
               >
-                {user.user_metadata?.username || 'PROFILE'}
+                {user.user_metadata?.username || t('nav.profile')}
               </Link>
             ) : (
               <Link 
                 to="/login" 
                 className="px-6 py-2 bg-raw-black text-raw-white border-thick border-raw-black uppercase text-sm font-semibold tracking-wider hover:bg-raw-white hover:text-raw-black transition-colors"
               >
-                LOGIN
+                {t('nav.login')}
               </Link>
             )}
           </nav>
@@ -64,28 +70,33 @@ export default function Header() {
         {mobileMenuOpen && (
           <nav className="md:hidden py-4 space-y-2 border-t-thick border-raw-black">
             <Link to="/news" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-              NEWS
+              {t('nav.news')}
             </Link>
             <Link to="/fixtures" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-              FIXTURES
+              {t('nav.fixtures')}
             </Link>
             <Link to="/standings" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-              STANDINGS
+              {t('nav.standings')}
             </Link>
             <Link to="/quinielas" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-              QUINIELAS
+              {t('nav.quinielas')}
             </Link>
+            
+            <div className="px-4 py-2">
+              <LanguageSelector />
+            </div>
+            
             {user ? (
               <Link to="/profile" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-                {user.user_metadata?.username || 'PROFILE'}
+                {user.user_metadata?.username || t('nav.profile')}
               </Link>
             ) : (
               <>
                 <Link to="/login" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-                  LOGIN
+                  {t('nav.login')}
                 </Link>
                 <Link to="/register" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
-                  REGISTER
+                  {t('nav.register')}
                 </Link>
               </>
             )}

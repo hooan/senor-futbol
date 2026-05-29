@@ -214,6 +214,7 @@ CREATE INDEX IF NOT EXISTS idx_fixtures_round              ON fixtures(round);
 CREATE INDEX IF NOT EXISTS idx_standings_tournament        ON standings(tournament_id);
 CREATE INDEX IF NOT EXISTS idx_standings_group             ON standings(group_name);
 CREATE INDEX IF NOT EXISTS idx_standings_rank              ON standings(rank);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_news_title           ON news(title);
 CREATE INDEX IF NOT EXISTS idx_news_published              ON news(is_published, published_at);
 CREATE INDEX IF NOT EXISTS idx_quinielas_share_code        ON quinielas(share_code);
 CREATE INDEX IF NOT EXISTS idx_quiniela_predictions_user   ON quiniela_predictions(user_id);

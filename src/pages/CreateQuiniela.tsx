@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCreateQuiniela } from '@/hooks/useQuinielas'
 import { useFixtures } from '@/hooks/useFixtures'
@@ -13,6 +14,7 @@ import Loading from '@/components/ui/Loading'
 import type { CreateQuinielaInput } from '@/types/database'
 
 export default function CreateQuiniela() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: fixtures, isLoading: loadingFixtures } = useFixtures()
@@ -70,18 +72,18 @@ export default function CreateQuiniela() {
     setError('')
 
     if (!user) {
-      setError('You must be logged in to create a quiniela')
+      setError(t('quinielas.mustBeLoggedIn'))
       return
     }
 
     if (formData.name.length < 3) {
-      setError('Quiniela name must be at least 3 characters')
+      setError(t('quinielas.nameMinLength', { count: 3 }))
       return
     }
 
     const fixtureIds = getFixtureIds()
     if (fixtureIds.length === 0) {
-      setError('No fixtures available for the selected option')
+      setError(t('quinielas.noFixturesAvailable'))
       return
     }
 
@@ -102,7 +104,7 @@ export default function CreateQuiniela() {
       // Navigate to the new quiniela
       navigate(`/quinielas/${newQuiniela.share_code}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create quiniela')
+      setError(err instanceof Error ? err.message : t('quinielas.failedToSavePrediction'))
     }
   }
 
@@ -133,10 +135,10 @@ export default function CreateQuiniela() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-headline text-4xl sm:text-5xl uppercase mb-4">
-            CREATE QUINIELA
+            {t('quinielas.createQuinielaTitle').toUpperCase()}
           </h1>
           <p className="text-gray-700 text-lg">
-            Set up your prediction pool and invite friends to compete!
+            {t('quinielas.createQuinielaSubtitle')}
           </p>
         </div>
 
@@ -146,43 +148,43 @@ export default function CreateQuiniela() {
             {/* Name */}
             <div>
               <label htmlFor="name" className="block font-semibold mb-2 uppercase text-sm">
-                Quiniela Name *
+                {t('quinielas.quinielaName')} *
               </label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Office World Cup Pool"
+                placeholder={t('quinielas.quinielaNamePlaceholder')}
                 required
                 maxLength={100}
               />
               <p className="text-sm text-gray-600 mt-1">
-                Give your quiniela a memorable name
+                {t('quinielas.quinielaNameHelper')}
               </p>
             </div>
 
             {/* Description */}
             <div>
               <label htmlFor="description" className="block font-semibold mb-2 uppercase text-sm">
-                Description (Optional)
+                {t('quinielas.descriptionOptional')}
               </label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Add details about your quiniela, rules, prizes, etc."
+                placeholder={t('quinielas.descriptionPlaceholder')}
                 rows={4}
                 maxLength={500}
               />
               <p className="text-sm text-gray-600 mt-1">
-                {formData.description.length}/500 characters
+                {formData.description.length}/500 {t('validation.maxLength', { count: 500 }).toLowerCase()}
               </p>
             </div>
 
             {/* Match Selection */}
             <div>
               <label className="block font-semibold mb-3 uppercase text-sm">
-                Which Matches? *
+                {t('quinielas.whichMatches')} *
               </label>
               <div className="space-y-3">
                 <Radio
@@ -190,68 +192,66 @@ export default function CreateQuiniela() {
                   value="group-stage"
                   checked={formData.matchSelection === 'group-stage'}
                   onChange={() => setFormData({ ...formData, matchSelection: 'group-stage' })}
-                  label="Group Stage Only (48 matches)"
+                  label={t('quinielas.groupStageOnly')}
                 />
                 <Radio
                   name="matchSelection"
                   value="knockout"
                   checked={formData.matchSelection === 'knockout'}
                   onChange={() => setFormData({ ...formData, matchSelection: 'knockout' })}
-                  label="Knockout Stage Only (16 matches)"
+                  label={t('quinielas.knockoutStageOnly')}
                 />
                 <Radio
                   name="matchSelection"
                   value="all"
                   checked={formData.matchSelection === 'all'}
                   onChange={() => setFormData({ ...formData, matchSelection: 'all' })}
-                  label="All Matches (64 matches)"
+                  label={t('quinielas.allMatches')}
                 />
               </div>
               <p className="text-sm text-gray-600 mt-2">
-                Participants will predict {getMatchCount()} matches
+                {t('quinielas.participantsWillPredict', { count: getMatchCount() })}
               </p>
             </div>
 
             {/* Privacy */}
             <div className="border-t-3 border-gray-200 pt-6">
               <label className="block font-semibold mb-3 uppercase text-sm">
-                Privacy Settings
+                {t('quinielas.privacySettings')}
               </label>
               <div className="space-y-3">
                 <Checkbox
                   checked={formData.is_public}
                   onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
-                  label="Make this quiniela public"
+                  label={t('quinielas.makePublic')}
                 />
                 <p className="text-sm text-gray-600 ml-7">
                   {formData.is_public
-                    ? 'Anyone can discover and join this quiniela'
-                    : 'Only people with the share code can join'}
+                    ? t('quinielas.publicDesc')
+                    : t('quinielas.privateDesc')}
                 </p>
               </div>
             </div>
 
             {/* Info Box */}
             <div className="bg-blue-50 border-thick border-blue-600 p-6">
-              <h3 className="font-headline text-lg uppercase mb-2">WHAT HAPPENS NEXT?</h3>
+              <h3 className="font-headline text-lg uppercase mb-2">{t('quinielas.whatHappensNext').toUpperCase()}</h3>
               <ul className="space-y-2 text-sm text-gray-800">
                 <li className="flex items-start gap-2">
                   <span className="font-bold">•</span>
-                  <span>You'll get a unique share code to invite participants</span>
+                  <span>{t('quinielas.whatHappensNextItem1')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold">•</span>
-                  <span>
-                    Predictions must be made before the deadline (1 hour before first match)
-                  </span>
+                  <span>{t('quinielas.whatHappensNextItem2')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold">•</span>
-                  <span>Points are awarded automatically after each match finishes</span>
+                  <span>{t('quinielas.whatHappensNextItem3')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-bold">•</span>
-                  <span>Track progress on the live leaderboard</span>
+                  <span>{t('quinielas.whatHappensNextItem4')}</span>
                 </li>
               </ul>
             </div>
@@ -271,7 +271,7 @@ export default function CreateQuiniela() {
                 disabled={createQuiniela.isPending}
                 className="flex-1"
               >
-                {createQuiniela.isPending ? 'CREATING...' : 'CREATE QUINIELA'}
+                {createQuiniela.isPending ? t('quinielas.creating').toUpperCase() : t('quinielas.create').toUpperCase()}
               </Button>
               <Button
                 type="button"
@@ -280,7 +280,7 @@ export default function CreateQuiniela() {
                 onClick={() => navigate('/quinielas')}
                 disabled={createQuiniela.isPending}
               >
-                CANCEL
+                {t('common.cancel').toUpperCase()}
               </Button>
             </div>
           </form>

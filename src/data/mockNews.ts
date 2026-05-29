@@ -36,6 +36,9 @@ Each group winner and runner-up will advance to the Round of 16, where the knock
     created_at: new Date('2026-01-15').toISOString(),
     updated_at: new Date('2026-01-15').toISOString(),
     is_published: true,
+    language: 'en',
+    source_name: null,
+    source_url: null,
   },
   {
     id: 'news-2',
@@ -58,6 +61,9 @@ The five-time world champions will be looking to add a sixth star to their jerse
     created_at: new Date('2026-04-20').toISOString(),
     updated_at: new Date('2026-04-20').toISOString(),
     is_published: true,
+    language: 'en',
+    source_name: null,
+    source_url: null,
   },
   {
     id: 'news-3',
@@ -86,6 +92,9 @@ The tournament kicks off on June 11, 2026, with a highly anticipated opening cer
     created_at: new Date('2026-05-25').toISOString(),
     updated_at: new Date('2026-05-25').toISOString(),
     is_published: true,
+    language: 'en',
+    source_name: null,
+    source_url: null,
   },
   {
     id: 'news-4',
@@ -110,6 +119,9 @@ All venues meet FIFA's strict standards and have been upgraded to provide world-
     created_at: new Date('2026-03-10').toISOString(),
     updated_at: new Date('2026-03-10').toISOString(),
     is_published: true,
+    language: 'en',
+    source_name: null,
+    source_url: null,
   },
   {
     id: 'news-5',
@@ -138,6 +150,9 @@ Advanced player tracking technology will provide detailed performance data, help
     created_at: new Date('2026-02-01').toISOString(),
     updated_at: new Date('2026-02-01').toISOString(),
     is_published: true,
+    language: 'en',
+    source_name: null,
+    source_url: null,
   },
 ]
 

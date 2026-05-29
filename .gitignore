@@ -45,6 +45,7 @@ docs
 .claude/*
 .opencode/*
 ./copilot/*
+.github/agents/*
 
 package-lock.json
 yarn.lock

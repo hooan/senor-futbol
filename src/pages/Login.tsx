@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 
 export default function Login() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -25,7 +27,7 @@ export default function Login() {
     const { error } = await signIn(email, password)
 
     if (error) {
-      setError(error.message || 'Failed to sign in')
+      setError(error.message || t('auth.failedToSignIn'))
       setLoading(false)
     } else {
       navigate(from, { replace: true })
@@ -36,9 +38,9 @@ export default function Login() {
     <div className="min-h-screen bg-raw-white flex items-center justify-center py-12">
       <div className="max-w-md w-full px-4">
         <div className="mb-8 text-center">
-          <h1 className="font-headline text-5xl uppercase mb-4">LOGIN</h1>
+          <h1 className="font-headline text-5xl uppercase mb-4">{t('auth.login').toUpperCase()}</h1>
           <p className="font-body text-gray-700">
-            Sign in to create quinielas and make predictions
+            {t('auth.signInPrompt')}
           </p>
         </div>
 
@@ -51,7 +53,7 @@ export default function Login() {
             )}
 
             <Input
-              label="Email"
+              label={t('auth.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -61,11 +63,11 @@ export default function Login() {
             />
 
             <Input
-              label="Password"
+              label={t('auth.password')}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('auth.password')}
               required
               disabled={loading}
             />
@@ -76,15 +78,15 @@ export default function Login() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'SIGNING IN...' : 'SIGN IN'}
+              {loading ? t('auth.signingIn').toUpperCase() : t('auth.signIn').toUpperCase()}
             </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t-thin border-gray-300 text-center">
             <p className="font-body text-sm text-gray-600">
-              Don't have an account?{' '}
+              {t('auth.dontHaveAccount')}{' '}
               <Link to="/register" className="text-raw-blue font-semibold hover:underline">
-                Register here
+                {t('auth.registerHere')}
               </Link>
             </p>
           </div>

@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { useNewsArticle } from '@/hooks/useNews'
 import Card from '@/components/ui/Card'
@@ -6,13 +7,14 @@ import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 
 export default function NewsDetail() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const { data: news, isLoading } = useNewsArticle(id || '')
   
   if (isLoading) {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center">
-        <Loading size="large" text="Loading article..." />
+        <Loading size="large" text={t('common.loading')} />
       </div>
     )
   }
@@ -23,13 +25,13 @@ export default function NewsDetail() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <Card>
             <h2 className="font-headline text-3xl uppercase mb-4">
-              ARTICLE NOT FOUND
+              {t('news.articleNotFound')}
             </h2>
             <p className="font-body mb-6">
-              The article you're looking for doesn't exist or has been removed.
+              {t('news.articleNotFoundDesc')}
             </p>
             <Link to="/news">
-              <Button variant="primary">Back to News</Button>
+              <Button variant="primary">{t('news.backToNews')}</Button>
             </Link>
           </Card>
         </div>
@@ -46,7 +48,7 @@ export default function NewsDetail() {
       <section className="border-b-thick border-raw-black">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Link to="/news" className="inline-flex items-center gap-2 font-body font-semibold uppercase text-sm text-raw-black hover:text-raw-blue mb-6">
-            ← Back to News
+            ← {t('news.backToNews')}
           </Link>
           
           <h1 className="font-headline text-4xl md:text-5xl uppercase leading-tight mb-6">
@@ -54,14 +56,42 @@ export default function NewsDetail() {
           </h1>
           
           <div className="flex flex-wrap gap-4 items-center font-mono text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <span className="uppercase font-semibold">{news.author?.username || 'Anonymous'}</span>
-            </div>
-            <span>•</span>
+            {/* Source Name */}
+            {news.source_name && (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="uppercase font-semibold">{news.source_name}</span>
+                </div>
+                <span>•</span>
+              </>
+            )}
+            {/* Date */}
             <div>{dateStr}</div>
+            {/* Author (if manually created) */}
+            {news.author && !news.source_name && (
+              <>
+                <span>•</span>
+                <div className="flex items-center gap-2">
+                  <span>{t('news.by')} {news.author.username}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
+      
+      {/* Cover Image */}
+      {news.cover_image_url && (
+        <section className="border-b-thick border-raw-black">
+          <div className="max-w-4xl mx-auto">
+            <img 
+              src={news.cover_image_url} 
+              alt={news.title}
+              className="w-full h-auto"
+            />
+          </div>
+        </section>
+      )}
       
       {/* Content */}
       <article className="py-12">
@@ -96,13 +126,27 @@ export default function NewsDetail() {
                 )
               })}
             </div>
+            
+            {/* Source URL Link */}
+            {news.source_url && (
+              <div className="mt-8 pt-8 border-t-thick border-gray-300">
+                <a 
+                  href={news.source_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-body font-semibold uppercase text-sm text-raw-blue hover:underline"
+                >
+                  {t('news.readOriginal')} →
+                </a>
+              </div>
+            )}
           </Card>
           
           {/* Back Button */}
           <div className="mt-8">
             <Link to="/news">
               <Button variant="secondary" size="large">
-                ← Back to All News
+                ← {t('news.backToAllNews')}
               </Button>
             </Link>
           </div>

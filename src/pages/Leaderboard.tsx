@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuiniela, useLeaderboard, useQuinielaFixtures } from '@/hooks/useQuinielas'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
@@ -6,6 +7,7 @@ import Loading from '@/components/ui/Loading'
 import Badge from '@/components/ui/Badge'
 
 export default function Leaderboard() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   
   const { data: quiniela, isLoading: loadingQuiniela } = useQuiniela(id)
@@ -58,10 +60,10 @@ export default function Leaderboard() {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center px-4">
         <Card className="max-w-md text-center">
-          <h2 className="font-headline text-2xl uppercase mb-4">LEADERBOARD NOT FOUND</h2>
-          <p className="text-gray-700 mb-6">Unable to load leaderboard.</p>
+          <h2 className="font-headline text-2xl uppercase mb-4">{t('quinielas.leaderboardNotFound').toUpperCase()}</h2>
+          <p className="text-gray-700 mb-6">{t('quinielas.unableToLoad')}</p>
           <Link to="/quinielas">
-            <Button>BACK TO QUINIELAS</Button>
+            <Button>{t('quinielas.backToQuinielas').toUpperCase()}</Button>
           </Link>
         </Card>
       </div>
@@ -78,12 +80,12 @@ export default function Leaderboard() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="font-headline text-3xl sm:text-4xl uppercase mb-2">LEADERBOARD</h1>
+              <h1 className="font-headline text-3xl sm:text-4xl uppercase mb-2">{t('quinielas.leaderboard').toUpperCase()}</h1>
               <p className="text-gray-300">{quiniela.name}</p>
             </div>
             <Link to={`/quinielas/${quiniela.share_code}`}>
               <Button variant="secondary" size="small">
-                ← BACK
+                ← {t('common.back').toUpperCase()}
               </Button>
             </Link>
           </div>
@@ -96,21 +98,21 @@ export default function Leaderboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
               <div className="text-3xl font-headline mb-1">{leaderboard.length}</div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Participants</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.participants')}</div>
             </div>
             <div>
               <div className="text-3xl font-headline mb-1">{totalMatches}</div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Total Matches</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.totalMatches')}</div>
             </div>
             <div>
               <div className="text-3xl font-headline text-green-600 mb-1">{finishedMatches}</div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Completed</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.completed')}</div>
             </div>
             <div>
               <div className="text-3xl font-headline text-yellow-600 mb-1">
                 {totalMatches - finishedMatches}
               </div>
-              <div className="text-xs uppercase text-gray-600 font-semibold">Remaining</div>
+              <div className="text-xs uppercase text-gray-600 font-semibold">{t('quinielas.remaining')}</div>
             </div>
           </div>
         </Card>
@@ -127,9 +129,9 @@ export default function Leaderboard() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-blue-900 mb-1">No Matches Completed Yet</h3>
+                <h3 className="font-semibold text-blue-900 mb-1">{t('quinielas.noMatchesCompletedYet')}</h3>
                 <p className="text-blue-800 text-sm">
-                  The leaderboard will update automatically as matches finish and points are awarded.
+                  {t('quinielas.noMatchesCompletedDesc')}
                 </p>
               </div>
             </div>
@@ -145,9 +147,9 @@ export default function Leaderboard() {
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-green-900 mb-1">Live Standings</h3>
+                <h3 className="font-semibold text-green-900 mb-1">{t('quinielas.liveStandings')}</h3>
                 <p className="text-green-800 text-sm">
-                  Based on {finishedMatches} of {totalMatches} completed matches. Rankings update after each match.
+                  {t('quinielas.liveStandingsDesc', { finished: finishedMatches, total: totalMatches })}
                 </p>
               </div>
             </div>
@@ -156,7 +158,7 @@ export default function Leaderboard() {
 
         {/* Leaderboard Table */}
         <Card>
-          <h2 className="font-headline text-2xl uppercase mb-6">RANKINGS</h2>
+          <h2 className="font-headline text-2xl uppercase mb-6">{t('quinielas.rankings').toUpperCase()}</h2>
           
           {leaderboard.length === 0 ? (
             <div className="text-center py-12">
@@ -173,7 +175,7 @@ export default function Leaderboard() {
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              <p className="text-gray-600">No participants yet</p>
+              <p className="text-gray-600">{t('quinielas.noParticipants')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -201,24 +203,24 @@ export default function Leaderboard() {
                           <span className="font-semibold font-mono text-lg truncate">
                             @{entry.user.username}
                           </span>
-                          <Badge variant="info">USER</Badge>
+                          <Badge variant="info">{t('quinielas.user').toUpperCase()}</Badge>
                         </>
                       ) : (
                         <>
                           <span className="font-semibold text-lg truncate">{entry.guest_name}</span>
-                          <Badge variant="warning">GUEST</Badge>
+                          <Badge variant="warning">{t('quinielas.guest').toUpperCase()}</Badge>
                         </>
                       )}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {entry.predictions_count} predictions made
+                      {entry.predictions_count} {t('quinielas.predictionsMade')}
                     </div>
                   </div>
 
                   {/* Points */}
                   <div className="flex-shrink-0 text-right">
                     <div className="font-headline text-3xl mb-1">{entry.total_points}</div>
-                    <div className="text-xs uppercase text-gray-500 font-semibold">POINTS</div>
+                    <div className="text-xs uppercase text-gray-500 font-semibold">{t('quinielas.points').toUpperCase()}</div>
                   </div>
 
                   {/* Trophy for top 3 */}
@@ -249,27 +251,27 @@ export default function Leaderboard() {
 
         {/* Scoring Reference */}
         <Card className="mt-8 bg-yellow-50 border-thick border-yellow-600">
-          <h3 className="font-headline text-lg uppercase mb-4">SCORING SYSTEM</h3>
+          <h3 className="font-headline text-lg uppercase mb-4">{t('quinielas.scoringSystem').toUpperCase()}</h3>
           <div className="space-y-3 text-sm">
             <div className="flex items-start gap-3">
               <span className="font-headline text-2xl text-yellow-600 w-8">5</span>
               <div>
-                <strong className="font-semibold">Exact Score</strong>
-                <p className="text-gray-700">Predicted the exact final score (e.g., 2-1)</p>
+                <strong className="font-semibold">{t('quinielas.exactScoreFull')}</strong>
+                <p className="text-gray-700">{t('quinielas.exactScoreFullDesc')}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <span className="font-headline text-2xl text-yellow-600 w-8">3</span>
               <div>
-                <strong className="font-semibold">Correct Result</strong>
-                <p className="text-gray-700">Predicted the winner or draw correctly</p>
+                <strong className="font-semibold">{t('quinielas.correctResultFull')}</strong>
+                <p className="text-gray-700">{t('quinielas.correctResultFullDesc')}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <span className="font-headline text-2xl text-yellow-600 w-8">1</span>
               <div>
-                <strong className="font-semibold">Correct Goal Difference</strong>
-                <p className="text-gray-700">Got the goal difference right (e.g., +2)</p>
+                <strong className="font-semibold">{t('quinielas.correctGoalDifferenceFull')}</strong>
+                <p className="text-gray-700">{t('quinielas.correctGoalDifferenceFullDesc')}</p>
               </div>
             </div>
           </div>
@@ -279,11 +281,11 @@ export default function Leaderboard() {
         <div className="mt-12 pt-8 border-t-thick border-gray-300">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to={`/quinielas/${quiniela.id}/predictions`}>
-              <Button size="large">VIEW MY PREDICTIONS</Button>
+              <Button size="large">{t('quinielas.viewMyPredictions').toUpperCase()}</Button>
             </Link>
             <Link to={`/quinielas/${quiniela.share_code}`}>
               <Button variant="secondary" size="large">
-                QUINIELA DETAILS
+                {t('quinielas.quinielaDetails').toUpperCase()}
               </Button>
             </Link>
           </div>

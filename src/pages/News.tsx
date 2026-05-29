@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { usePublishedNews } from '@/hooks/useNews'
 import NewsCard from '@/components/news/NewsCard'
 import Loading from '@/components/ui/Loading'
 
 export default function News() {
+  const { t } = useTranslation()
   const { data: news, isLoading } = usePublishedNews()
   
   // Separate featured (first) from rest
@@ -15,10 +17,10 @@ export default function News() {
       <section className="border-b-thick border-raw-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="font-headline text-5xl md:text-6xl uppercase mb-4">
-            LATEST NEWS
+            {t('news.latest')}
           </h1>
           <p className="font-body text-lg text-gray-700">
-            Stay updated with World Cup 2026 news, announcements, and analysis
+            {t('news.subtitle')}
           </p>
         </div>
       </section>
@@ -28,12 +30,12 @@ export default function News() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <div className="flex justify-center py-20">
-              <Loading size="large" text="Loading news..." />
+              <Loading size="large" text={t('common.loading')} />
             </div>
           ) : !news || news.length === 0 ? (
             <div className="text-center py-20">
               <p className="font-body text-xl text-gray-600">
-                No news articles found
+                {t('news.noNews')}
               </p>
             </div>
           ) : (
@@ -42,7 +44,7 @@ export default function News() {
               {featuredNews && (
                 <div>
                   <h2 className="font-headline text-2xl uppercase mb-6 pb-3 border-b-thick border-raw-black">
-                    FEATURED
+                    {t('news.featured')}
                   </h2>
                   <NewsCard news={featuredNews} featured />
                 </div>
@@ -52,7 +54,7 @@ export default function News() {
               {otherNews && otherNews.length > 0 && (
                 <div>
                   <h2 className="font-headline text-2xl uppercase mb-6 pb-3 border-b-thick border-raw-black">
-                    MORE NEWS
+                    {t('news.moreNews')}
                   </h2>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {otherNews.map(article => (

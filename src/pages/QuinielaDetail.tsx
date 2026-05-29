@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuinielaByShareCode, useJoinQuiniela, useIsParticipant, useParticipants } from '@/hooks/useQuinielas'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
@@ -13,6 +14,7 @@ import ShareButtons from '@/components/ui/ShareButtons'
 import { format } from 'date-fns'
 
 export default function QuinielaDetail() {
+  const { t } = useTranslation()
   const { shareCode } = useParams<{ shareCode: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -37,7 +39,7 @@ export default function QuinielaDetail() {
 
     // If not logged in, require guest name
     if (!user && (!guestName || guestName.trim().length < 2)) {
-      setError('Please enter your name (at least 2 characters)')
+      setError(t('validation.minLength', { count: 2 }))
       return
     }
 
@@ -48,12 +50,12 @@ export default function QuinielaDetail() {
         guestName: !user && guestName ? guestName.trim() : null,
       })
       
-      showToast('Successfully joined quiniela!', 'success')
+      showToast(t('messages.success'), 'success')
       
       // Success! Navigate to predictions page
       navigate(`/quinielas/${quiniela.id}/predictions`)
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to join quiniela'
+      const errorMsg = err instanceof Error ? err.message : t('quinielas.failedToSavePrediction')
       setError(errorMsg)
       showToast(errorMsg, 'error')
     }
@@ -86,13 +88,12 @@ export default function QuinielaDetail() {
               />
             </svg>
           </div>
-          <h2 className="font-headline text-2xl uppercase mb-4">QUINIELA NOT FOUND</h2>
+          <h2 className="font-headline text-2xl uppercase mb-4">{t('quinielas.quinielaNotFound').toUpperCase()}</h2>
           <p className="text-gray-700 mb-6">
-            The share code "{shareCode}" doesn't match any quiniela. Please check the code and try
-            again.
+            {t('quinielas.quinielaNotFoundDesc', { code: shareCode })}
           </p>
           <Link to="/quinielas">
-            <Button>BROWSE QUINIELAS</Button>
+            <Button>{t('quinielas.browseQuinielas').toUpperCase()}</Button>
           </Link>
         </Card>
       </div>
@@ -112,11 +113,11 @@ export default function QuinielaDetail() {
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300">
                 <span className="font-mono">by @{quiniela.creator.username}</span>
                 <span>•</span>
-                <span>{participants?.length || 0} participants</span>
+                <span>{participants?.length || 0} {t('quinielas.participants').toLowerCase()}</span>
               </div>
             </div>
             <Badge variant={quiniela.is_public ? 'success' : 'warning'}>
-              {quiniela.is_public ? 'PUBLIC' : 'PRIVATE'}
+              {quiniela.is_public ? t('quinielas.public').toUpperCase() : t('quinielas.private').toUpperCase()}
             </Badge>
           </div>
           {quiniela.description && (
@@ -132,7 +133,7 @@ export default function QuinielaDetail() {
             {/* Join Section */}
             {!isParticipant && (
               <Card className="bg-gradient-to-br from-blue-50 to-white border-thick border-blue-600">
-                <h2 className="font-headline text-2xl uppercase mb-4">JOIN THIS QUINIELA</h2>
+                <h2 className="font-headline text-2xl uppercase mb-4">{t('quinielas.joinThisQuiniela').toUpperCase()}</h2>
                 
                 {isPastDeadline ? (
                   <div className="bg-red-50 border-thick border-red-600 p-6">
@@ -145,9 +146,9 @@ export default function QuinielaDetail() {
                         />
                       </svg>
                       <div>
-                        <h3 className="font-semibold text-red-900 mb-1">Deadline Has Passed</h3>
+                        <h3 className="font-semibold text-red-900 mb-1">{t('quinielas.deadlineHasPassed')}</h3>
                         <p className="text-red-800 text-sm">
-                          This quiniela is no longer accepting new participants.
+                          {t('quinielas.deadlinePassedDesc')}
                         </p>
                       </div>
                     </div>
@@ -157,19 +158,19 @@ export default function QuinielaDetail() {
                     {!user && (
                       <div>
                         <label htmlFor="guestName" className="block font-semibold mb-2 uppercase text-sm">
-                          Your Name
+                          {t('quinielas.yourName').toUpperCase()}
                         </label>
                         <Input
                           id="guestName"
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
-                          placeholder="Enter your name"
+                          placeholder={t('quinielas.enterYourName')}
                           required
                           minLength={2}
                           maxLength={50}
                         />
                         <p className="text-sm text-gray-600 mt-1">
-                          You're joining as a guest. No account required!
+                          {t('quinielas.joiningAsGuest')}
                         </p>
                       </div>
                     )}
@@ -186,7 +187,7 @@ export default function QuinielaDetail() {
                         disabled={joinMutation.isPending}
                         size="large"
                       >
-                        {joinMutation.isPending ? 'JOINING...' : 'JOIN NOW'}
+                        {joinMutation.isPending ? t('quinielas.joining').toUpperCase() : t('quinielas.joinNow').toUpperCase()}
                       </Button>
                       {user && (
                         <Button
@@ -194,7 +195,7 @@ export default function QuinielaDetail() {
                           variant="secondary"
                           onClick={() => setShowJoinForm(false)}
                         >
-                          CANCEL
+                          {t('common.cancel').toUpperCase()}
                         </Button>
                       )}
                     </div>
@@ -202,10 +203,10 @@ export default function QuinielaDetail() {
                 ) : (
                   <div>
                     <p className="text-gray-700 mb-6">
-                      Ready to compete? Join this quiniela and start making your predictions!
+                      {t('quinielas.readyToCompete')}
                     </p>
                     <Button onClick={() => setShowJoinForm(true)} size="large">
-                      JOIN AS @{user.user_metadata?.username}
+                      {t('quinielas.joinAsUser', { username: user.user_metadata?.username }).toUpperCase()}
                     </Button>
                   </div>
                 )}
@@ -227,16 +228,16 @@ export default function QuinielaDetail() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-headline text-xl uppercase mb-2">YOU'RE IN!</h3>
+                    <h3 className="font-headline text-xl uppercase mb-2">{t('quinielas.youreIn').toUpperCase()}</h3>
                     <p className="text-gray-700 mb-4">
-                      You're a participant in this quiniela. Time to make your predictions!
+                      {t('quinielas.youreInDesc')}
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <Link to={`/quinielas/${quiniela.id}/predictions`}>
-                        <Button>MAKE PREDICTIONS</Button>
+                        <Button>{t('quinielas.makePredictions').toUpperCase()}</Button>
                       </Link>
                       <Link to={`/quinielas/${quiniela.id}/leaderboard`}>
-                        <Button variant="secondary">VIEW LEADERBOARD</Button>
+                        <Button variant="secondary">{t('quinielas.viewLeaderboard').toUpperCase()}</Button>
                       </Link>
                     </div>
                   </div>
@@ -247,10 +248,10 @@ export default function QuinielaDetail() {
             {/* Participants List */}
             <Card>
               <h2 className="font-headline text-2xl uppercase mb-6">
-                PARTICIPANTS ({participants?.length || 0})
+                {t('quinielas.participants').toUpperCase()} ({participants?.length || 0})
               </h2>
               {!participants || participants.length === 0 ? (
-                <p className="text-gray-600 text-center py-8">No participants yet. Be the first!</p>
+                <p className="text-gray-600 text-center py-8">{t('quinielas.noParticipantsYet')}</p>
               ) : (
                 <div className="space-y-2">
                   {participants.map((participant) => (
@@ -273,13 +274,13 @@ export default function QuinielaDetail() {
                             )}
                           </div>
                           <div className="text-xs text-gray-500">
-                            Joined {format(new Date(participant.joined_at), 'MMM d, yyyy')}
+                            {t('quinielas.joined')} {format(new Date(participant.joined_at), 'MMM d, yyyy')}
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-headline text-2xl">{participant.total_points}</div>
-                        <div className="text-xs uppercase text-gray-500">POINTS</div>
+                        <div className="text-xs uppercase text-gray-500">{t('quinielas.points').toUpperCase()}</div>
                       </div>
                     </div>
                   ))}
@@ -292,25 +293,25 @@ export default function QuinielaDetail() {
           <div className="space-y-6">
             {/* Info Card */}
             <Card>
-              <h3 className="font-headline text-lg uppercase mb-4">DETAILS</h3>
+              <h3 className="font-headline text-lg uppercase mb-4">{t('quinielas.details').toUpperCase()}</h3>
               <div className="space-y-4">
                 <div>
                   <div className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-2">
-                    Share Code
+                    {t('quinielas.shareCode')}
                   </div>
                   <div className="font-mono text-xl font-bold bg-gray-100 px-3 py-2 border-3 border-gray-900 text-center mb-2">
                     {quiniela.share_code}
                   </div>
                   <CopyButton
                     text={quiniela.share_code}
-                    label="COPY CODE"
-                    successMessage="Share code copied!"
+                    label={t('quinielas.copyCode').toUpperCase()}
+                    successMessage={t('quinielas.shareCodeCopied')}
                     className="w-full"
                   />
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1">
-                    Deadline
+                    {t('quinielas.deadline')}
                   </div>
                   <div className={`font-mono ${isPastDeadline ? 'text-red-600' : 'text-gray-900'}`}>
                     {format(new Date(quiniela.deadline), 'MMM d, yyyy')}
@@ -320,7 +321,7 @@ export default function QuinielaDetail() {
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1">
-                    Created
+                    {t('quinielas.created')}
                   </div>
                   <div className="text-sm text-gray-700">
                     {format(new Date(quiniela.created_at), 'MMM d, yyyy')}
@@ -331,28 +332,28 @@ export default function QuinielaDetail() {
 
             {/* Scoring Rules */}
             <Card className="bg-yellow-50 border-thick border-yellow-600">
-              <h3 className="font-headline text-lg uppercase mb-4">SCORING</h3>
+              <h3 className="font-headline text-lg uppercase mb-4">{t('quinielas.scoring').toUpperCase()}</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="font-headline text-xl text-yellow-600">5</span>
-                  <span>Exact score</span>
+                  <span>{t('quinielas.exactScore')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-headline text-xl text-yellow-600">3</span>
-                  <span>Correct result</span>
+                  <span>{t('quinielas.correctResultScore')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-headline text-xl text-yellow-600">1</span>
-                  <span>Correct goal difference</span>
+                  <span>{t('quinielas.correctGoalDifference')}</span>
                 </div>
               </div>
             </Card>
 
             {/* Share Quiniela */}
             <Card>
-              <h3 className="font-headline text-lg uppercase mb-4">SHARE QUINIELA</h3>
+              <h3 className="font-headline text-lg uppercase mb-4">{t('quinielas.shareQuiniela').toUpperCase()}</h3>
               <p className="text-sm text-gray-700 mb-4">
-                Invite friends to join using the share code or share directly on social media.
+                {t('quinielas.shareQuinielaDesc')}
               </p>
               <ShareButtons
                 url={window.location.href}

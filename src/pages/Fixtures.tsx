@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useUpcomingFixtures, useFinishedFixtures } from '@/hooks/useFixtures'
 import { useActiveTournament } from '@/hooks/useActiveTournament'
 import FixtureCard from '@/components/fixtures/FixtureCard'
@@ -7,6 +8,7 @@ import Chip from '@/components/ui/Chip'
 import TournamentSelector from '@/components/TournamentSelector'
 
 export default function Fixtures() {
+  const { t } = useTranslation()
   const [filter, setFilter] = useState<'upcoming' | 'results'>('upcoming')
   const { activeTournament, activeTournamentId } = useActiveTournament()
   
@@ -22,10 +24,10 @@ export default function Fixtures() {
       <section className="border-b-thick border-raw-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h1 className="font-headline text-5xl md:text-6xl uppercase mb-4">
-            FIXTURES
+            {t('fixtures.title')}
           </h1>
           <p className="font-body text-lg text-gray-700">
-            {activeTournament?.name || 'Tournament'} match schedule and results
+            {activeTournament?.name || t('fixtures.tournament')} {t('fixtures.subtitle')}
           </p>
         </div>
       </section>
@@ -46,14 +48,14 @@ export default function Fixtures() {
               active={filter === 'upcoming'}
               onClick={() => setFilter('upcoming')}
             >
-              UPCOMING
+              {t('fixtures.upcoming')}
             </Chip>
             <Chip
               variant="filter"
               active={filter === 'results'}
               onClick={() => setFilter('results')}
             >
-              RESULTS
+              {t('fixtures.results')}
             </Chip>
           </div>
         </div>
@@ -64,12 +66,12 @@ export default function Fixtures() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
             <div className="flex justify-center py-20">
-              <Loading size="large" text="Loading fixtures..." />
+              <Loading size="large" text={t('common.loading')} />
             </div>
           ) : !fixtures || fixtures.length === 0 ? (
             <div className="text-center py-20">
               <p className="font-body text-xl text-gray-600">
-                No {filter} fixtures found
+                {t('fixtures.noMatches')}
               </p>
             </div>
           ) : (

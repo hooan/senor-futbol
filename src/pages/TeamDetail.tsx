@@ -2,12 +2,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTeam, useTeamFixtures, useTeamPlayers, useTeamStanding, useTeamStats } from '@/hooks/useTeamDetail'
 import { useActiveTournament } from '@/hooks/useActiveTournament'
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 
 export default function TeamDetail() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { activeTournamentId } = useActiveTournament()
@@ -21,7 +23,7 @@ export default function TeamDetail() {
   if (teamLoading || fixturesLoading || playersLoading) {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center">
-        <Loading size="large" text="Loading team details..." />
+        <Loading size="large" text={t('fixtures.loadingTeamDetails')} />
       </div>
     )
   }
@@ -30,8 +32,8 @@ export default function TeamDetail() {
     return (
       <div className="min-h-screen bg-raw-white flex items-center justify-center">
         <div className="text-center">
-          <p className="font-headline text-2xl uppercase mb-4">TEAM NOT FOUND</p>
-          <Button onClick={() => navigate('/fixtures')}>BACK TO FIXTURES</Button>
+          <p className="font-headline text-2xl uppercase mb-4">{t('fixtures.teamNotFound')}</p>
+          <Button onClick={() => navigate('/fixtures')}>{t('fixtures.backToFixtures')}</Button>
         </div>
       </div>
     )
@@ -51,7 +53,7 @@ export default function TeamDetail() {
       <section className="border-b-thick border-raw-black bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Button onClick={() => navigate(-1)} size="small" className="mb-6">
-            ← BACK
+            ← {t('common.back').toUpperCase()}
           </Button>
 
           {/* Team Info */}
@@ -70,7 +72,7 @@ export default function TeamDetail() {
 
             <div className="flex-1">
               <h1 className="font-headline text-5xl uppercase mb-2">{team.name}</h1>
-              <p className="font-mono text-sm text-gray-600 uppercase">Country Code: {team.code}</p>
+              <p className="font-mono text-sm text-gray-600 uppercase">{t('teams.countryCode')}: {team.code}</p>
             </div>
           </div>
         </div>
@@ -81,13 +83,13 @@ export default function TeamDetail() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Matches Played */}
           <Card variant="elevated">
-            <p className="font-mono text-xs uppercase text-gray-600 mb-2">Matches Played</p>
+            <p className="font-mono text-xs uppercase text-gray-600 mb-2">{t('teams.matchesPlayed')}</p>
             <p className="font-headline text-4xl">{stats?.played || 0}</p>
           </Card>
 
           {/* Record */}
           <Card variant="elevated">
-            <p className="font-mono text-xs uppercase text-gray-600 mb-2">Record (W-D-L)</p>
+            <p className="font-mono text-xs uppercase text-gray-600 mb-2">{t('teams.recordWDL')}</p>
             <p className="font-headline text-4xl">
               {stats?.wins || 0}-{stats?.draws || 0}-{stats?.losses || 0}
             </p>
@@ -95,7 +97,7 @@ export default function TeamDetail() {
 
           {/* Goals */}
           <Card variant="elevated">
-            <p className="font-mono text-xs uppercase text-gray-600 mb-2">Goals For / Against</p>
+            <p className="font-mono text-xs uppercase text-gray-600 mb-2">{t('teams.goalsForAgainst')}</p>
             <p className="font-headline text-4xl">
               {stats?.goalsFor || 0} / {stats?.goalsAgainst || 0}
             </p>
@@ -103,7 +105,7 @@ export default function TeamDetail() {
 
           {/* Goal Difference */}
           <Card variant="elevated">
-            <p className="font-mono text-xs uppercase text-gray-600 mb-2">Goal Difference</p>
+            <p className="font-mono text-xs uppercase text-gray-600 mb-2">{t('teams.goalDifference')}</p>
             <p className={`font-headline text-4xl ${(stats?.goalDifference || 0) > 0 ? 'text-green-600' : (stats?.goalDifference || 0) < 0 ? 'text-red-600' : ''}`}>
               {(stats?.goalDifference || 0) > 0 ? '+' : ''}{stats?.goalDifference || 0}
             </p>
@@ -114,24 +116,24 @@ export default function TeamDetail() {
         {standing && (
           <Card variant="elevated" className="mb-8">
             <h3 className="font-headline text-2xl uppercase mb-4">
-              GROUP {standing.group_name} STANDING
+              {t('teams.groupStanding', { group: standing.group_name })}
             </h3>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <p className="font-mono text-xs uppercase text-gray-600 mb-1">Position</p>
+                <p className="font-mono text-xs uppercase text-gray-600 mb-1">{t('standings.position')}</p>
                 <p className="font-headline text-3xl">{standing.rank}</p>
               </div>
               <div>
-                <p className="font-mono text-xs uppercase text-gray-600 mb-1">Points</p>
+                <p className="font-mono text-xs uppercase text-gray-600 mb-1">{t('teams.pointsLabel')}</p>
                 <p className="font-headline text-3xl">{standing.points}</p>
               </div>
               <div>
-                <p className="font-mono text-xs uppercase text-gray-600 mb-1">Played</p>
+                <p className="font-mono text-xs uppercase text-gray-600 mb-1">{t('teams.playedLabel')}</p>
                 <p className="font-headline text-3xl">{standing.played}</p>
               </div>
               <div>
-                <p className="font-mono text-xs uppercase text-gray-600 mb-1">Goal Diff</p>
+                <p className="font-mono text-xs uppercase text-gray-600 mb-1">{t('teams.goalDiffLabel')}</p>
                 <p className={`font-headline text-3xl ${standing.goal_difference > 0 ? 'text-green-600' : standing.goal_difference < 0 ? 'text-red-600' : ''}`}>
                   {standing.goal_difference > 0 ? '+' : ''}{standing.goal_difference}
                 </p>
@@ -142,7 +144,7 @@ export default function TeamDetail() {
 
         {/* Fixtures */}
         <Card variant="elevated" className="mb-8">
-          <h3 className="font-headline text-2xl uppercase mb-6">MATCHES</h3>
+          <h3 className="font-headline text-2xl uppercase mb-6">{t('teams.matches').toUpperCase()}</h3>
 
           {fixtures && fixtures.length > 0 ? (
             <div className="space-y-3">
@@ -184,7 +186,7 @@ export default function TeamDetail() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span className="font-body text-sm">{isHome ? 'vs' : '@'}</span>
+                        <span className="font-body text-sm">{isHome ? t('teams.vs') : t('teams.at')}</span>
                         <div className="w-10 h-10 border-thin border-raw-black flex items-center justify-center bg-white overflow-hidden">
                           {opponent.logo_url ? (
                             <img 
@@ -208,9 +210,9 @@ export default function TeamDetail() {
                               {teamScore} - {opponentScore}
                             </span>
                           </div>
-                          {result === 'win' && <Badge variant="success">WIN</Badge>}
-                          {result === 'draw' && <Badge variant="warning">DRAW</Badge>}
-                          {result === 'loss' && <Badge variant="error">LOSS</Badge>}
+                          {result === 'win' && <Badge variant="success">{t('teams.win')}</Badge>}
+                          {result === 'draw' && <Badge variant="warning">{t('teams.draw')}</Badge>}
+                          {result === 'loss' && <Badge variant="error">{t('teams.loss')}</Badge>}
                         </>
                       ) : (
                         <Badge variant="default">{fixture.status}</Badge>
@@ -221,14 +223,14 @@ export default function TeamDetail() {
               })}
             </div>
           ) : (
-            <p className="text-center py-8 text-gray-600 font-body">No matches found</p>
+            <p className="text-center py-8 text-gray-600 font-body">{t('teams.noMatchesFound')}</p>
           )}
         </Card>
 
         {/* Squad/Roster */}
         {players && players.length > 0 && (
           <Card variant="elevated">
-            <h3 className="font-headline text-2xl uppercase mb-6">SQUAD ({players.length} PLAYERS)</h3>
+            <h3 className="font-headline text-2xl uppercase mb-6">{t('teams.squadPlayers', { count: players.length })}</h3>
 
             <div className="grid md:grid-cols-2 gap-8">
               {Object.entries(playersByPosition).map(([position, positionPlayers]) => {
@@ -237,7 +239,7 @@ export default function TeamDetail() {
                 return (
                   <div key={position}>
                     <h4 className="font-headline text-lg uppercase mb-4 pb-2 border-b-thick border-raw-black">
-                      {position}S ({positionPlayers.length})
+                      {t(`teams.positionPlayers`, { position: t(`teams.${position.toLowerCase()}`), count: positionPlayers.length })}
                     </h4>
 
                     <div className="space-y-2">
@@ -247,7 +249,7 @@ export default function TeamDetail() {
                           <div className="flex-1">
                             <p className="font-body text-sm font-semibold">{player.name}</p>
                             {player.age && (
-                              <p className="font-mono text-xs text-gray-600">Age: {player.age}</p>
+                              <p className="font-mono text-xs text-gray-600">{t('teams.ageLabel')}: {player.age}</p>
                             )}
                           </div>
                         </div>
@@ -259,7 +261,7 @@ export default function TeamDetail() {
             </div>
 
             {players.length === 0 && (
-              <p className="text-center py-8 text-gray-600 font-body">No roster information available</p>
+              <p className="text-center py-8 text-gray-600 font-body">{t('teams.noRosterInfo')}</p>
             )}
           </Card>
         )}
