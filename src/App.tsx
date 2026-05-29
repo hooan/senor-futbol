@@ -17,6 +17,8 @@ import Home from '@/pages/Home'
 import UIPreview from '@/pages/UIPreview'
 import Fixtures from '@/pages/Fixtures'
 import TodayMatches from '@/pages/TodayMatches'
+import MatchDetail from '@/pages/MatchDetail'
+import TeamDetail from '@/pages/TeamDetail'
 import Standings from '@/pages/Standings'
 import News from '@/pages/News'
 import NewsDetail from '@/pages/NewsDetail'
@@ -62,8 +64,12 @@ function App() {
             
             {/* Fixtures Routes */}
             <Route path="fixtures" element={<Fixtures />} />
+            <Route path="fixtures/:id" element={<MatchDetail />} />
             <Route path="fixtures/today" element={<TodayMatches />} />
             <Route path="fixtures/results" element={<div className="p-8">Results - Coming Soon</div>} />
+            
+            {/* Teams Route */}
+            <Route path="teams/:id" element={<TeamDetail />} />
             
             {/* Standings Route */}
             <Route path="standings" element={<Standings />} />

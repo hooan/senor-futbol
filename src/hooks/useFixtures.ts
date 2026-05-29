@@ -6,11 +6,11 @@ import type { FixtureWithTeams } from '@/types/database'
 import { startOfToday, endOfToday } from 'date-fns'
 
 // Get all fixtures with teams
-export function useFixtures() {
+export function useFixtures(tournamentId?: string) {
   return useQuery({
-    queryKey: ['fixtures'],
+    queryKey: ['fixtures', tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('fixtures')
         .select(`
           *,
@@ -18,6 +18,12 @@ export function useFixtures() {
           away_team:teams!fixtures_away_team_id_fkey(*)
         `)
         .order('match_date', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as FixtureWithTeams[]
@@ -27,14 +33,14 @@ export function useFixtures() {
 }
 
 // Get today's fixtures
-export function useTodayFixtures() {
+export function useTodayFixtures(tournamentId?: string) {
   return useQuery({
-    queryKey: ['fixtures', 'today'],
+    queryKey: ['fixtures', 'today', tournamentId],
     queryFn: async () => {
       const startOfDay = startOfToday()
       const endOfDay = endOfToday()
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('fixtures')
         .select(`
           *,
@@ -45,6 +51,12 @@ export function useTodayFixtures() {
         .lte('match_date', endOfDay.toISOString())
         .order('match_date', { ascending: true })
 
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
+
       if (error) throw error
       return (data || []) as FixtureWithTeams[]
     },
@@ -53,22 +65,29 @@ export function useTodayFixtures() {
 }
 
 // Get upcoming fixtures
-export function useUpcomingFixtures(limit = 10) {
+export function useUpcomingFixtures(limit = 10, tournamentId?: string) {
   return useQuery({
-    queryKey: ['fixtures', 'upcoming', limit],
+    queryKey: ['fixtures', 'upcoming', limit, tournamentId],
     queryFn: async () => {
       const now = new Date().toISOString()
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('fixtures')
         .select(`
           *,
           home_team:teams!fixtures_home_team_id_fkey(*),
           away_team:teams!fixtures_away_team_id_fkey(*)
         `)
-        .gt('match_date', now)
+        .gte('match_date', now)
+        .in('status', ['NS', 'PST'])
         .order('match_date', { ascending: true })
         .limit(limit)
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as FixtureWithTeams[]
@@ -78,11 +97,11 @@ export function useUpcomingFixtures(limit = 10) {
 }
 
 // Get finished fixtures (results)
-export function useFinishedFixtures(limit = 10) {
+export function useFinishedFixtures(limit = 10, tournamentId?: string) {
   return useQuery({
-    queryKey: ['fixtures', 'finished', limit],
+    queryKey: ['fixtures', 'finished', limit, tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('fixtures')
         .select(`
           *,
@@ -93,6 +112,12 @@ export function useFinishedFixtures(limit = 10) {
         .order('match_date', { ascending: false })
         .limit(limit)
 
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
+
       if (error) throw error
       return (data || []) as FixtureWithTeams[]
     },
@@ -101,11 +126,11 @@ export function useFinishedFixtures(limit = 10) {
 }
 
 // Get fixtures by group
-export function useFixturesByGroup(group: string) {
+export function useFixturesByGroup(group: string, tournamentId?: string) {
   return useQuery({
-    queryKey: ['fixtures', 'group', group],
+    queryKey: ['fixtures', 'group', group, tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('fixtures')
         .select(`
           *,
@@ -114,6 +139,12 @@ export function useFixturesByGroup(group: string) {
         `)
         .eq('group_name', group)
         .order('match_date', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as FixtureWithTeams[]
@@ -124,11 +155,11 @@ export function useFixturesByGroup(group: string) {
 }
 
 // Get fixtures by round
-export function useFixturesByRound(round: string) {
+export function useFixturesByRound(round: string, tournamentId?: string) {
   return useQuery({
-    queryKey: ['fixtures', 'round', round],
+    queryKey: ['fixtures', 'round', round, tournamentId],
     queryFn: async () => {
-      const { data, error} = await supabase
+      let query = supabase
         .from('fixtures')
         .select(`
           *,
@@ -137,6 +168,12 @@ export function useFixturesByRound(round: string) {
         `)
         .eq('round', round)
         .order('match_date', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as FixtureWithTeams[]

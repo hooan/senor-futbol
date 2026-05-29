@@ -5,11 +5,11 @@ import { supabase } from '@/lib/supabaseClient'
 import type { StandingWithTeam } from '@/types/database'
 
 // Get all standings with teams
-export function useStandings() {
+export function useStandings(tournamentId?: string) {
   return useQuery({
-    queryKey: ['standings'],
+    queryKey: ['standings', tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('standings')
         .select(`
           *,
@@ -17,6 +17,12 @@ export function useStandings() {
         `)
         .order('group_name', { ascending: true })
         .order('rank', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as StandingWithTeam[]
@@ -26,11 +32,11 @@ export function useStandings() {
 }
 
 // Get standings by group
-export function useStandingsByGroup(group: string) {
+export function useStandingsByGroup(group: string, tournamentId?: string) {
   return useQuery({
-    queryKey: ['standings', 'group', group],
+    queryKey: ['standings', 'group', group, tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('standings')
         .select(`
           *,
@@ -38,6 +44,12 @@ export function useStandingsByGroup(group: string) {
         `)
         .eq('group_name', group)
         .order('rank', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as StandingWithTeam[]
@@ -48,11 +60,11 @@ export function useStandingsByGroup(group: string) {
 }
 
 // Get all groups with standings
-export function useAllGroupStandings() {
+export function useAllGroupStandings(tournamentId?: string) {
   return useQuery({
-    queryKey: ['standings', 'all-groups'],
+    queryKey: ['standings', 'all-groups', tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('standings')
         .select(`
           *,
@@ -60,6 +72,12 @@ export function useAllGroupStandings() {
         `)
         .order('group_name', { ascending: true })
         .order('rank', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       
@@ -81,11 +99,11 @@ export function useAllGroupStandings() {
 }
 
 // Get qualified teams (top 2 from each group)
-export function useQualifiedTeams() {
+export function useQualifiedTeams(tournamentId?: string) {
   return useQuery({
-    queryKey: ['standings', 'qualified'],
+    queryKey: ['standings', 'qualified', tournamentId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('standings')
         .select(`
           *,
@@ -94,6 +112,12 @@ export function useQualifiedTeams() {
         .lte('rank', 2)
         .order('group_name', { ascending: true })
         .order('rank', { ascending: true })
+
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       return (data || []) as StandingWithTeam[]

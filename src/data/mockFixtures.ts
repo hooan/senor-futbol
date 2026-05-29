@@ -31,6 +31,7 @@ function createFixture(
     away_team_id: awayTeamId,
     match_date: matchDate.toISOString(),
     venue,
+    referee: null,
     status,
     home_score: homeScore,
     away_score: awayScore,

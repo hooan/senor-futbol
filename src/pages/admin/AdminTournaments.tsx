@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { useToast } from '@/contexts/ToastContext'
@@ -61,7 +60,6 @@ export default function AdminTournaments() {
   const [importedTournaments, setImportedTournaments] = useState<string[]>([])
   const [progress, setProgress] = useState('')
   const toast = useToast()
-  const navigate = useNavigate()
   const { data: tournaments, isLoading, refetch } = useTournaments()
 
   const handleImport = async (tournament: AvailableTournament) => {
@@ -89,8 +87,13 @@ export default function AdminTournaments() {
 
       setProgress(`Found ${fixtures.length} fixtures. Importing to database...`)
 
-      // Step 3: Import to database
-      const result = await syncService.syncTournament(tournament.leagueId, tournament.season, tournament.name)
+      // Step 3: Import to database with progress callback
+      const result = await syncService.syncTournament(
+        tournament.leagueId,
+        tournament.season,
+        tournament.name,
+        (msg) => setProgress(msg) // Progress callback for live updates
+      )
 
       if (!result.success) {
         throw new Error(result.errors.join(', '))
@@ -98,8 +101,9 @@ export default function AdminTournaments() {
 
       // Success
       toast.showToast(
-        `Imported ${result.teamsImported} teams, ${result.fixturesImported} fixtures, ${result.standingsImported} standings`,
-        'success'
+        `✅ Imported: ${result.teamsImported} teams, ${result.fixturesImported} fixtures, ${result.standingsImported} standings, ${result.eventsImported} events, ${result.lineupsImported} lineups, ${result.playersImported} players`,
+        'success',
+        5000
       )
       
       setImportedTournaments([...importedTournaments, tournament.id])
@@ -107,11 +111,6 @@ export default function AdminTournaments() {
       
       // Refetch tournaments list
       refetch()
-      
-      // Refresh page to show in fixtures
-      setTimeout(() => {
-        navigate('/fixtures')
-      }, 2000)
 
     } catch (error) {
       console.error('Import error:', error)

@@ -1,7 +1,11 @@
-import type { ApiFootballResponse, ApiFixture, ApiLeague, ApiStanding } from '@/types/apiFootball'
+import type { ApiFootballResponse, ApiFixture, ApiLeague, ApiStanding, ApiFixtureDetail, ApiSquadPlayer } from '@/types/apiFootball'
 
 const API_BASE_URL = 'https://v3.football.api-sports.io'
 const API_KEY = import.meta.env.VITE_API_FOOTBALL_KEY || ''
+
+// In the browser, route through the Vercel proxy to avoid CORS.
+// In Node (CLI / SSR), call the API directly with the key.
+const IS_BROWSER = typeof window !== 'undefined'
 
 interface RequestLog {
   count: number
@@ -61,7 +65,24 @@ class ApiFootballClient {
   private async request<T>(endpoint: string, params: Record<string, any> = {}): Promise<ApiFootballResponse<T>> {
     this.checkRateLimit()
 
-    const url = new URL(`${this.baseURL}${endpoint}`)
+    let url: URL
+    let headers: Record<string, string>
+
+    if (IS_BROWSER) {
+      // Route through Vercel serverless proxy — avoids CORS and keeps key server-side.
+      const path = endpoint.replace(/^\//, '')
+      url = new URL(`/api/football`, window.location.origin)
+      url.searchParams.append('path', path)
+      headers = {}
+    } else {
+      // Node / CLI — call API directly.
+      url = new URL(`${this.baseURL}${endpoint}`)
+      headers = {
+        'x-rapidapi-host': 'v3.football.api-sports.io',
+        'x-rapidapi-key': this.apiKey,
+      }
+    }
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         url.searchParams.append(key, String(value))
@@ -72,10 +93,7 @@ class ApiFootballClient {
 
     const response = await fetch(url.toString(), {
       method: 'GET',
-      headers: {
-        'x-rapidapi-host': 'v3.football.api-sports.io',
-        'x-rapidapi-key': this.apiKey,
-      },
+      headers,
     })
 
     if (!response.ok) {
@@ -122,6 +140,12 @@ class ApiFootballClient {
     return response.response[0] || null
   }
 
+  // Get full fixture detail with events, lineups, and statistics
+  async getFixtureDetail(fixtureId: number): Promise<ApiFixtureDetail | null> {
+    const response = await this.request<ApiFixtureDetail>('/fixtures', { id: fixtureId })
+    return response.response[0] || null
+  }
+
   async getFixturesByDate(date: string, leagueId?: number): Promise<ApiFixture[]> {
     const params: Record<string, any> = { date }
     if (leagueId) params.league = leagueId
@@ -156,6 +180,16 @@ class ApiFootballClient {
     
     const data = await response.json()
     return data.response
+  }
+
+  // Players - Get team squad/roster
+  async getTeamSquad(teamId: number): Promise<ApiSquadPlayer[]> {
+    const response = await this.request<{ team: { id: number; name: string }; players: ApiSquadPlayer[] }>('/players/squads', {
+      team: teamId,
+    })
+    
+    if (response.response.length === 0) return []
+    return response.response[0].players || []
   }
 }
 

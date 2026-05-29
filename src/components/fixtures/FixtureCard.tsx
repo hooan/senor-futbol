@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
 import { FixtureWithTeams } from '@/types/database'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -8,6 +9,7 @@ interface FixtureCardProps {
 }
 
 export default function FixtureCard({ fixture }: FixtureCardProps) {
+  const navigate = useNavigate()
   const matchDate = new Date(fixture.match_date)
   const dateStr = format(matchDate, 'MMM d, yyyy')
   const timeStr = format(matchDate, 'HH:mm')
@@ -26,9 +28,19 @@ export default function FixtureCard({ fixture }: FixtureCardProps) {
         return <Badge variant="default">{fixture.status}</Badge>
     }
   }
+
+  const handleTeamClick = (e: React.MouseEvent, teamId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate(`/teams/${teamId}`)
+  }
+
+  const handleMatchClick = () => {
+    navigate(`/fixtures/${fixture.id}`)
+  }
   
   return (
-    <Card className="hover:border-heavy transition-all cursor-pointer">
+    <Card className="hover:border-heavy transition-all cursor-pointer" onClick={handleMatchClick}>
       <div className="space-y-4">
         {/* Header: Date, Time, Status */}
         <div className="flex justify-between items-start">
@@ -41,11 +53,22 @@ export default function FixtureCard({ fixture }: FixtureCardProps) {
         
         {/* Teams and Score */}
         <div className="space-y-3">
-          {/* Home Team */}
+          {/* Home Team - Clickable */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 border-thin border-raw-black flex items-center justify-center">
-                <span className="font-mono text-xs">{fixture.home_team.code}</span>
+            <div 
+              className="flex items-center gap-3 hover:bg-blue-50 p-2 -m-2 rounded transition-colors cursor-pointer"
+              onClick={(e) => handleTeamClick(e, fixture.home_team_id)}
+            >
+              <div className="w-10 h-10 border-thin border-raw-black flex items-center justify-center bg-white overflow-hidden">
+                {fixture.home_team.logo_url ? (
+                  <img 
+                    src={fixture.home_team.logo_url} 
+                    alt={fixture.home_team.name}
+                    className="w-full h-full object-contain p-1"
+                  />
+                ) : (
+                  <span className="font-mono text-xs">{fixture.home_team.code}</span>
+                )}
               </div>
               <span className="font-body font-semibold">{fixture.home_team.name}</span>
             </div>
@@ -54,11 +77,22 @@ export default function FixtureCard({ fixture }: FixtureCardProps) {
             )}
           </div>
           
-          {/* Away Team */}
+          {/* Away Team - Clickable */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 border-thin border-raw-black flex items-center justify-center">
-                <span className="font-mono text-xs">{fixture.away_team.code}</span>
+            <div 
+              className="flex items-center gap-3 hover:bg-red-50 p-2 -m-2 rounded transition-colors cursor-pointer"
+              onClick={(e) => handleTeamClick(e, fixture.away_team_id)}
+            >
+              <div className="w-10 h-10 border-thin border-raw-black flex items-center justify-center bg-white overflow-hidden">
+                {fixture.away_team.logo_url ? (
+                  <img 
+                    src={fixture.away_team.logo_url} 
+                    alt={fixture.away_team.name}
+                    className="w-full h-full object-contain p-1"
+                  />
+                ) : (
+                  <span className="font-mono text-xs">{fixture.away_team.code}</span>
+                )}
               </div>
               <span className="font-body font-semibold">{fixture.away_team.name}</span>
             </div>

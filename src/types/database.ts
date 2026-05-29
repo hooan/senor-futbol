@@ -31,6 +31,7 @@ export interface Fixture {
   away_team_id: string
   match_date: string
   venue: string | null
+  referee: string | null
   status: MatchStatus
   home_score: number | null
   away_score: number | null
@@ -46,6 +47,7 @@ export interface Fixture {
 export interface Standing {
   id: string
   team_id: string
+  tournament_id?: string
   group_name: string
   rank: number
   points: number
@@ -216,4 +218,76 @@ export interface LeaderboardEntry {
 export interface JoinQuinielaInput {
   share_code: string
   guest_name?: string // Required if not authenticated
+}
+
+// Match Events (goals, cards, substitutions)
+export interface MatchEvent {
+  id: string
+  fixture_id: string
+  team_id: string
+  time_elapsed: number
+  time_extra: number | null
+  player_name: string
+  api_player_id: number | null
+  assist_name: string | null
+  assist_api_player_id: number | null
+  event_type: string // 'goal', 'card', 'subst', 'var'
+  detail: string // 'Normal Goal', 'Yellow Card', etc.
+  comments: string | null
+  created_at: string
+  // Joined data
+  team?: Team
+}
+
+// Match Lineups (starting XI and substitutes)
+export interface MatchLineup {
+  id: string
+  fixture_id: string
+  team_id: string
+  formation: string | null
+  player_name: string
+  player_number: number | null
+  api_player_id: number | null
+  position: string
+  grid_position: string | null
+  is_starter: boolean
+  created_at: string
+  // Joined data
+  team?: Team
+}
+
+// Match Statistics (possession, shots, etc.)
+export interface MatchStatistic {
+  id: string
+  fixture_id: string
+  team_id: string
+  stat_type: string
+  stat_value: string
+  created_at: string
+  // Joined data
+  team?: Team
+}
+
+// Players (team rosters)
+export interface Player {
+  id: string
+  api_player_id: number
+  team_id: string
+  name: string
+  age: number | null
+  number: number | null
+  position: string | null
+  photo_url: string | null
+  created_at: string
+  updated_at: string
+  // Joined data
+  team?: Team
+}
+
+// Match detail with all related data
+export interface MatchDetail {
+  fixture: FixtureWithTeams
+  events: MatchEvent[]
+  lineups: MatchLineup[]
+  statistics: MatchStatistic[]
 }

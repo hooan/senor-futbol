@@ -1,6 +1,8 @@
 import { useAllGroupStandings } from '@/hooks/useStandings'
+import { useActiveTournament } from '@/hooks/useActiveTournament'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
+import TournamentSelector from '@/components/TournamentSelector'
 import { StandingWithTeam } from '@/types/database'
 
 interface GroupTableProps {
@@ -67,9 +69,11 @@ function GroupTable({ group, standings }: GroupTableProps) {
 }
 
 export default function Standings() {
-  const { data: allStandings, isLoading } = useAllGroupStandings()
+  const { activeTournament, activeTournamentId } = useActiveTournament()
+  const { data: allStandings, isLoading } = useAllGroupStandings(activeTournamentId || undefined)
   
-  const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+  // Get actual groups from data instead of hardcoded
+  const groups = allStandings ? Object.keys(allStandings).sort() : []
   
   return (
     <div className="min-h-screen bg-raw-white">
@@ -80,8 +84,15 @@ export default function Standings() {
             STANDINGS
           </h1>
           <p className="font-body text-lg text-gray-700">
-            Group stage tables for World Cup 2026
+            {activeTournament?.name || 'Tournament'} group stage tables
           </p>
+        </div>
+      </section>
+
+      {/* Tournament Selector */}
+      <section className="border-b-thick border-raw-black bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <TournamentSelector />
         </div>
       </section>
       
@@ -91,6 +102,12 @@ export default function Standings() {
           {isLoading ? (
             <div className="flex justify-center py-20">
               <Loading size="large" text="Loading standings..." />
+            </div>
+          ) : groups.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="font-body text-xl text-gray-600">
+                No standings data available
+              </p>
             </div>
           ) : (
             <div className="grid lg:grid-cols-2 gap-8">

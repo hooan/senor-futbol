@@ -1,5 +1,5 @@
-import type { ApiFixture, ApiStanding } from '@/types/apiFootball'
-import type { Fixture, Team, Standing, MatchStatus } from '@/types/database'
+import type { ApiFixture, ApiStanding, ApiFixtureEvent, ApiFixtureLineup, ApiFixtureStatistic, ApiSquadPlayer } from '@/types/apiFootball'
+import type { Fixture, Team, Standing, MatchStatus, MatchEvent, MatchLineup, MatchStatistic, Player } from '@/types/database'
 
 // Map API-Football status codes to our database status
 export function mapApiStatus(apiStatus: string): MatchStatus {
@@ -60,6 +60,7 @@ export function transformFixture(
 ): Omit<Fixture, 'home_team' | 'away_team'> {
   const round = getRoundType(apiFixture.league.round)
   const groupName = extractGroupName(apiFixture.league.round)
+  const venue = apiFixture.fixture.venue.name || 'TBD'
   
   return {
     id: crypto.randomUUID(),
@@ -68,11 +69,12 @@ export function transformFixture(
     home_team_id: homeTeamId,
     away_team_id: awayTeamId,
     match_date: apiFixture.fixture.date,
-    venue: apiFixture.fixture.venue.name || null,
+    venue: venue,
+    referee: apiFixture.fixture.referee,
     status: mapApiStatus(apiFixture.fixture.status.short),
     home_score: apiFixture.goals.home,
     away_score: apiFixture.goals.away,
-    round,
+    round: round,
     group_name: groupName,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -241,4 +243,143 @@ export function calculateStandingsFromFixtures(
   })
 
   return standings
+}
+
+// Transform match events (goals, cards, subs, VAR)
+export function transformMatchEvents(
+  events: ApiFixtureEvent[],
+  fixtureId: string,
+  teamIdMap: Map<number, string>
+): MatchEvent[] {
+  if (!events || events.length === 0) return []
+
+  const result: MatchEvent[] = []
+
+  events.forEach((event) => {
+    const teamId = teamIdMap.get(event.team.id)
+    if (!teamId) return
+
+    result.push({
+      id: crypto.randomUUID(),
+      fixture_id: fixtureId,
+      team_id: teamId,
+      time_elapsed: event.time.elapsed,
+      time_extra: event.time.extra,
+      player_name: event.player.name,
+      api_player_id: event.player.id,
+      assist_name: event.assist.name,
+      assist_api_player_id: event.assist.id,
+      event_type: event.type.toLowerCase(), // 'goal', 'card', 'subst', 'var'
+      detail: event.detail,
+      comments: event.comments,
+      created_at: new Date().toISOString(),
+    })
+  })
+
+  return result
+}
+
+// Transform match lineups (starting XI + substitutes)
+export function transformMatchLineups(
+  lineups: ApiFixtureLineup[],
+  fixtureId: string,
+  teamIdMap: Map<number, string>
+): MatchLineup[] {
+  if (!lineups || lineups.length === 0) return []
+
+  const result: MatchLineup[] = []
+
+  lineups.forEach((lineup) => {
+    const teamId = teamIdMap.get(lineup.team.id)
+    if (!teamId) return
+
+    // Starting XI
+    lineup.startXI.forEach((starter) => {
+      result.push({
+        id: crypto.randomUUID(),
+        fixture_id: fixtureId,
+        team_id: teamId,
+        formation: lineup.formation,
+        player_name: starter.player.name,
+        player_number: starter.player.number,
+        api_player_id: starter.player.id,
+        position: starter.player.pos,
+        grid_position: starter.player.grid,
+        is_starter: true,
+        created_at: new Date().toISOString(),
+      })
+    })
+
+    // Substitutes
+    lineup.substitutes.forEach((sub) => {
+      result.push({
+        id: crypto.randomUUID(),
+        fixture_id: fixtureId,
+        team_id: teamId,
+        formation: lineup.formation,
+        player_name: sub.player.name,
+        player_number: sub.player.number,
+        api_player_id: sub.player.id,
+        position: sub.player.pos,
+        grid_position: sub.player.grid,
+        is_starter: false,
+        created_at: new Date().toISOString(),
+      })
+    })
+  })
+
+  return result
+}
+
+// Transform match statistics
+export function transformMatchStatistics(
+  statistics: ApiFixtureStatistic[],
+  fixtureId: string,
+  teamIdMap: Map<number, string>
+): MatchStatistic[] {
+  if (!statistics || statistics.length === 0) return []
+
+  const result: MatchStatistic[] = []
+
+  statistics.forEach((teamStats) => {
+    const teamId = teamIdMap.get(teamStats.team.id)
+    if (!teamId) return
+
+    teamStats.statistics.forEach((stat) => {
+      // Skip null/undefined values
+      if (stat.value === null || stat.value === undefined) return
+
+      result.push({
+        id: crypto.randomUUID(),
+        fixture_id: fixtureId,
+        team_id: teamId,
+        stat_type: stat.type,
+        stat_value: String(stat.value), // Convert to string for storage
+        created_at: new Date().toISOString(),
+      })
+    })
+  })
+
+  return result
+}
+
+// Transform team squad/roster players
+export function transformSquadPlayers(
+  players: ApiSquadPlayer[],
+  teamId: string
+): Player[] {
+  if (!players || players.length === 0) return []
+
+  return players.map((player) => ({
+    id: crypto.randomUUID(),
+    api_player_id: player.id,
+    team_id: teamId,
+    name: player.name,
+    age: player.age,
+    number: player.number,
+    position: player.position,
+    photo_url: player.photo,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }))
 }

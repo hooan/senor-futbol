@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { useUpcomingFixtures, useFinishedFixtures } from '@/hooks/useFixtures'
+import { useActiveTournament } from '@/hooks/useActiveTournament'
 import FixtureCard from '@/components/fixtures/FixtureCard'
 import Loading from '@/components/ui/Loading'
 import Chip from '@/components/ui/Chip'
+import TournamentSelector from '@/components/TournamentSelector'
 
 export default function Fixtures() {
   const [filter, setFilter] = useState<'upcoming' | 'results'>('upcoming')
+  const { activeTournament, activeTournamentId } = useActiveTournament()
   
-  const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures(20)
-  const { data: finishedFixtures, isLoading: finishedLoading } = useFinishedFixtures(20)
+  const { data: upcomingFixtures, isLoading: upcomingLoading } = useUpcomingFixtures(20, activeTournamentId || undefined)
+  const { data: finishedFixtures, isLoading: finishedLoading } = useFinishedFixtures(20, activeTournamentId || undefined)
   
   const fixtures = filter === 'upcoming' ? upcomingFixtures : finishedFixtures
   const isLoading = filter === 'upcoming' ? upcomingLoading : finishedLoading
@@ -22,13 +25,20 @@ export default function Fixtures() {
             FIXTURES
           </h1>
           <p className="font-body text-lg text-gray-700">
-            World Cup 2026 match schedule and results
+            {activeTournament?.name || 'Tournament'} match schedule and results
           </p>
+        </div>
+      </section>
+
+      {/* Tournament Selector */}
+      <section className="border-b-thick border-raw-black bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <TournamentSelector />
         </div>
       </section>
       
       {/* Filters */}
-      <section className="border-b-thick border-raw-black bg-gray-50">
+      <section className="border-b-thick border-raw-black bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-wrap gap-3">
             <Chip
