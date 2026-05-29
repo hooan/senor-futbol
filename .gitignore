@@ -37,3 +37,15 @@ coverage
 .vite
 .turbo
 .vercel
+
+# Prompts
+docs
+
+# IA stuffs
+.claude/*
+.opencode/*
+./copilot/*
+
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
