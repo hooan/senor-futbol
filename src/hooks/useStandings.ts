@@ -1,13 +1,26 @@
-// React Query hooks for fetching standings data
+// React Query hooks for fetching standings data from Supabase
 
 import { useQuery } from '@tanstack/react-query'
-import { mockDataService } from '@/services/mockData'
+import { supabase } from '@/lib/supabaseClient'
+import type { StandingWithTeam } from '@/types/database'
 
-// Get all standings
+// Get all standings with teams
 export function useStandings() {
   return useQuery({
     queryKey: ['standings'],
-    queryFn: () => mockDataService.standings.getAll(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('standings')
+        .select(`
+          *,
+          team:teams(*)
+        `)
+        .order('group_name', { ascending: true })
+        .order('rank', { ascending: true })
+
+      if (error) throw error
+      return (data || []) as StandingWithTeam[]
+    },
     staleTime: 1000 * 60 * 10, // 10 minutes
   })
 }
@@ -16,7 +29,19 @@ export function useStandings() {
 export function useStandingsByGroup(group: string) {
   return useQuery({
     queryKey: ['standings', 'group', group],
-    queryFn: () => mockDataService.standings.getByGroup(group),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('standings')
+        .select(`
+          *,
+          team:teams(*)
+        `)
+        .eq('group_name', group)
+        .order('rank', { ascending: true })
+
+      if (error) throw error
+      return (data || []) as StandingWithTeam[]
+    },
     staleTime: 1000 * 60 * 10,
     enabled: !!group,
   })
@@ -26,7 +51,31 @@ export function useStandingsByGroup(group: string) {
 export function useAllGroupStandings() {
   return useQuery({
     queryKey: ['standings', 'all-groups'],
-    queryFn: () => mockDataService.standings.getAllGroups(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('standings')
+        .select(`
+          *,
+          team:teams(*)
+        `)
+        .order('group_name', { ascending: true })
+        .order('rank', { ascending: true })
+
+      if (error) throw error
+      
+      // Group by group_name
+      const standings = (data || []) as StandingWithTeam[]
+      const groups: Record<string, StandingWithTeam[]> = {}
+      
+      standings.forEach(standing => {
+        if (!groups[standing.group_name]) {
+          groups[standing.group_name] = []
+        }
+        groups[standing.group_name].push(standing)
+      })
+
+      return groups
+    },
     staleTime: 1000 * 60 * 10,
   })
 }
@@ -35,7 +84,20 @@ export function useAllGroupStandings() {
 export function useQualifiedTeams() {
   return useQuery({
     queryKey: ['standings', 'qualified'],
-    queryFn: () => mockDataService.standings.getQualified(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('standings')
+        .select(`
+          *,
+          team:teams(*)
+        `)
+        .lte('rank', 2)
+        .order('group_name', { ascending: true })
+        .order('rank', { ascending: true })
+
+      if (error) throw error
+      return (data || []) as StandingWithTeam[]
+    },
     staleTime: 1000 * 60 * 10,
   })
 }

@@ -32,6 +32,7 @@ import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminNews from '@/pages/admin/AdminNews'
 import AdminNewsForm from '@/pages/admin/AdminNewsForm'
 import AdminUsers from '@/pages/admin/AdminUsers'
+import AdminTournaments from '@/pages/admin/AdminTournaments'
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -111,6 +112,11 @@ function App() {
             <Route path="admin/users" element={
               <AdminRoute>
                 <AdminUsers />
+              </AdminRoute>
+            } />
+            <Route path="admin/tournaments" element={
+              <AdminRoute>
+                <AdminTournaments />
               </AdminRoute>
             } />
             

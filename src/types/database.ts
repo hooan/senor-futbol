@@ -1,8 +1,22 @@
 // Database Types - Mirror Supabase schema
 
+export interface Tournament {
+  id: string
+  api_league_id: number
+  season: number
+  name: string
+  description: string | null
+  start_date: string | null
+  end_date: string | null
+  logo_url: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Team {
   id: string
   api_team_id: number | null
+  tournament_id?: string
   name: string
   code: string // 3-letter country code
   logo_url: string | null
@@ -12,6 +26,7 @@ export interface Team {
 export interface Fixture {
   id: string
   api_fixture_id: number | null
+  tournament_id?: string
   home_team_id: string
   away_team_id: string
   match_date: string

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "import-tournament": "bash -lc 'set -a && source .env.local && set +a && tsx scripts/import-tournament.ts'"
   },
   "keywords": [
     "world-cup",
@@ -37,6 +38,7 @@
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.22.3",
     "typescript": "6.0.3",
     "vite": "^5.4.21"
   }

@@ -1,27 +1,60 @@
-import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
-import Loading from '@/components/ui/Loading'
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import Loading from "@/components/ui/Loading";
+import { supabase } from "@/lib/supabaseClient";
 
 interface AdminRouteProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function AdminRoute({ children }: AdminRouteProps) {
-  const { user, loading } = useAuth()
+  const { user, loading } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        setAdminLoading(false);
+        return;
+      }
+
+      setAdminLoading(true);
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      // Fallback to auth metadata in case profile row is missing or query fails.
+      if (error || !data) {
+        const metadataAdmin =
+          user.user_metadata?.is_admin === true ||
+          user.app_metadata?.is_admin === true;
+        setIsAdmin(metadataAdmin);
+      } else {
+        setIsAdmin(data.is_admin === true);
+      }
+
+      setAdminLoading(false);
+    };
+
+    checkAdmin();
+  }, [user]);
+
+  if (loading || adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loading />
       </div>
-    )
+    );
   }
 
-  // Check if user is authenticated and is admin
-  const isAdmin = user?.user_metadata?.is_admin === true
-
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
   if (!isAdmin) {
@@ -41,10 +74,12 @@ export default function AdminRoute({ children }: AdminRouteProps) {
               />
             </svg>
           </div>
-          <h2 className="font-headline text-2xl uppercase mb-4 text-red-900">ACCESS DENIED</h2>
+          <h2 className="font-headline text-2xl uppercase mb-4 text-red-900">
+            ACCESS DENIED
+          </h2>
           <p className="text-red-800 mb-6">
-            You don't have permission to access the admin panel. This area is restricted to
-            administrators only.
+            You don't have permission to access the admin panel. This area is
+            restricted to administrators only.
           </p>
           <a
             href="/"
@@ -54,8 +89,8 @@ export default function AdminRoute({ children }: AdminRouteProps) {
           </a>
         </div>
       </div>
-    )
+    );
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

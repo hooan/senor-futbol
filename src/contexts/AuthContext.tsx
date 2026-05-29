@@ -38,27 +38,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-const signUp = async (email: string, password: string, username: string) => {
-  try {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username,
+  const signUp = async (email: string, password: string, username: string) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+          },
         },
-      },
-    })
+      })
 
-    if (error) return { error }
+      if (error) return { error }
 
     // Profile automatically created by database trigger
     
-    return { error: null }
-  } catch (error) {
-    return { error }
+      return { error: null }
+    } catch (error) {
+      return { error }
+    }
   }
-}
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
