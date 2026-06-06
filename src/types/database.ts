@@ -19,6 +19,7 @@ export interface Team {
   tournament_id?: string
   name: string
   code: string // 3-letter country code
+  group_name?: string | null
   logo_url: string | null
   created_at: string
 }
@@ -143,15 +144,40 @@ export interface ApiRequestLog {
 
 export type MatchStatus = 'NS' | 'LIVE' | 'HT' | 'FT' | 'PST' | 'CANC'
 
-export type Group = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H'
+export type Group =
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
 
 export type Round = 
   | 'Group Stage'
+  | 'Round of 32'
   | 'Round of 16'
   | 'Quarter Finals'
   | 'Semi Finals'
   | 'Third Place'
   | 'Final'
+
+export interface AppSetting {
+  key: string
+  value_json: Record<string, unknown>
+  description: string | null
+  updated_at: string
+  updated_by: string | null
+}
+
+export interface FeatureFlags {
+  multiTournamentEnabled: boolean
+}
 
 // Helper types for forms and API
 
@@ -180,6 +206,39 @@ export interface CreateNewsInput {
 }
 
 export interface UpdateNewsInput extends Partial<CreateNewsInput> {
+  id: string
+}
+
+export interface CreateFixtureInput {
+  tournament_id: string
+  home_team_id: string
+  away_team_id: string
+  match_date: string
+  venue?: string | null
+  referee?: string | null
+  status: MatchStatus
+  home_score?: number | null
+  away_score?: number | null
+  round: Round
+  group_name?: Group | null
+  api_fixture_id?: number | null
+}
+
+export interface UpdateFixtureInput extends Partial<CreateFixtureInput> {
+  id: string
+}
+
+export interface CreatePlayerInput {
+  team_id: string
+  api_player_id: number
+  name: string
+  age?: number | null
+  number?: number | null
+  position?: string | null
+  photo_url?: string | null
+}
+
+export interface UpdatePlayerInput extends Partial<CreatePlayerInput> {
   id: string
 }
 

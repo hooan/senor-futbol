@@ -1,7 +1,14 @@
 import { useActiveTournament } from '@/hooks/useActiveTournament'
 
 export default function TournamentSelector() {
-  const { activeTournament, activeTournamentId, setActiveTournamentId, tournaments, isLoading } =
+  const {
+    activeTournament,
+    activeTournamentId,
+    setActiveTournamentId,
+    tournaments,
+    isLoading,
+    multiTournamentEnabled,
+  } =
     useActiveTournament()
 
   if (isLoading || tournaments.length === 0) {
@@ -9,13 +16,16 @@ export default function TournamentSelector() {
   }
 
   // If only one tournament, don't show selector
-  if (tournaments.length === 1) {
+  if (!multiTournamentEnabled || tournaments.length === 1) {
     return (
       <div className="border-thick border-raw-black bg-gray-50 px-4 py-3">
         <p className="font-headline text-sm uppercase">
           {activeTournament?.name || 'No Tournament Selected'}
         </p>
-        <p className="font-mono text-xs text-gray-600">Season {activeTournament?.season}</p>
+        <p className="font-mono text-xs text-gray-600">
+          Season {activeTournament?.season}
+          {!multiTournamentEnabled ? ' · WORLD CUP MODE' : ''}
+        </p>
       </div>
     )
   }

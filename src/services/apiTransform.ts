@@ -42,6 +42,7 @@ export function getRoundType(round: string): string {
   const roundLower = round.toLowerCase()
   
   if (roundLower.includes('group')) return 'Group Stage'
+  if (roundLower.includes('round of 32') || roundLower.includes('16th finals')) return 'Round of 32'
   if (roundLower.includes('round of 16') || roundLower.includes('8th finals')) return 'Round of 16'
   if (roundLower.includes('quarter') || roundLower.includes('4th finals')) return 'Quarter Finals'
   if (roundLower.includes('semi') || roundLower.includes('semi-finals')) return 'Semi Finals'
@@ -97,6 +98,7 @@ export function extractTeamsFromFixtures(
         tournament_id: tournamentId,
         name: fixture.teams.home.name,
         code: fixture.teams.home.name.substring(0, 3).toUpperCase(),
+        group_name: null,
         logo_url: fixture.teams.home.logo,
         created_at: new Date().toISOString(),
       })
@@ -110,6 +112,7 @@ export function extractTeamsFromFixtures(
         tournament_id: tournamentId,
         name: fixture.teams.away.name,
         code: fixture.teams.away.name.substring(0, 3).toUpperCase(),
+        group_name: null,
         logo_url: fixture.teams.away.logo,
         created_at: new Date().toISOString(),
       })

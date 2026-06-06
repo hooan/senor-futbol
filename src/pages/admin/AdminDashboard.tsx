@@ -167,6 +167,44 @@ export default function AdminDashboard() {
               </button>
             </Link>
 
+            <Link to="/admin/fixtures">
+              <button className="w-full p-6 border-thick border-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-left group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-600 text-white flex items-center justify-center border-thick border-red-700 group-hover:bg-white group-hover:text-red-600">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v2H2V5z" />
+                      <path fillRule="evenodd" d="M2 9h16v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9zm3 2a1 1 0 000 2h2a1 1 0 100-2H5z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-lg uppercase">Manage Fixtures</div>
+                    <div className="text-sm text-gray-600 group-hover:text-gray-300">
+                      Create and update World Cup matches
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </Link>
+
+            <Link to="/admin/rosters">
+              <button className="w-full p-6 border-thick border-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-left group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-teal-600 text-white flex items-center justify-center border-thick border-teal-700 group-hover:bg-white group-hover:text-teal-600">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M7 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2h-2V3a1 1 0 10-2 0v1H8V3a1 1 0 00-1-1z" />
+                      <path d="M18 9H2v6a2 2 0 002 2h12a2 2 0 002-2V9z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-lg uppercase">Manage Rosters</div>
+                    <div className="text-sm text-gray-600 group-hover:text-gray-300">
+                      Add, edit, and remove players
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </Link>
+
             <Link to="/admin/news-sources">
               <button className="w-full p-6 border-thick border-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-left group">
                 <div className="flex items-center gap-4">
@@ -180,6 +218,24 @@ export default function AdminDashboard() {
                     <div className="font-semibold text-lg uppercase">News Sources</div>
                     <div className="text-sm text-gray-600 group-hover:text-gray-300">
                       Manage automated news fetching
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </Link>
+
+            <Link to="/admin/settings">
+              <button className="w-full p-6 border-thick border-gray-900 hover:bg-gray-900 hover:text-white transition-colors text-left group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gray-700 text-white flex items-center justify-center border-thick border-gray-800 group-hover:bg-white group-hover:text-gray-700">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M11.983 1.58a1 1 0 00-1.966 0l-.158.95a6.98 6.98 0 00-1.407.584l-.81-.52a1 1 0 00-1.26.157L4.93 4.202a1 1 0 00-.157 1.26l.52.81a6.98 6.98 0 00-.584 1.407l-.95.158a1 1 0 000 1.966l.95.158c.13.494.326.967.584 1.407l-.52.81a1 1 0 00.157 1.26l1.452 1.452a1 1 0 001.26.157l.81-.52c.44.258.913.454 1.407.584l.158.95a1 1 0 001.966 0l.158-.95a6.98 6.98 0 001.407-.584l.81.52a1 1 0 001.26-.157l1.452-1.452a1 1 0 00.157-1.26l-.52-.81a6.98 6.98 0 00.584-1.407l.95-.158a1 1 0 000-1.966l-.95-.158a6.98 6.98 0 00-.584-1.407l.52-.81a1 1 0 00-.157-1.26L15.07 2.751a1 1 0 00-1.26-.157l-.81.52a6.98 6.98 0 00-1.407-.584l-.158-.95zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-lg uppercase">App Settings</div>
+                    <div className="text-sm text-gray-600 group-hover:text-gray-300">
+                      Toggle World Cup and multi-tournament mode
                     </div>
                   </div>
                 </div>

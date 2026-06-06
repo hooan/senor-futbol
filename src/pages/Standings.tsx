@@ -63,7 +63,7 @@ function GroupTable({ group, standings }: GroupTableProps) {
       <div className="mt-3 pt-3 border-t-thin border-gray-300">
         <p className="text-xs font-mono text-gray-600">
           <span className="inline-block w-3 h-3 bg-green-50 border-thin border-gray-300 mr-1"></span>
-          {t('standings.qualifiedForRound16')}
+          {t('standings.qualifiedForKnockout')}
         </p>
       </div>
     </Card>

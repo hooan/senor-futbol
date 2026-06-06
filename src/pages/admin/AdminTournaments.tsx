@@ -5,6 +5,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { DataSyncService } from '@/services/dataSync'
 import { apiFootball } from '@/services/apiFootball'
 import { useTournaments } from '@/hooks/useTournaments'
+import { useFeatureFlags } from '@/hooks/useFeatureFlags'
 
 interface AvailableTournament {
   id: string
@@ -61,6 +62,8 @@ export default function AdminTournaments() {
   const [progress, setProgress] = useState('')
   const toast = useToast()
   const { data: tournaments, isLoading, refetch } = useTournaments()
+  const { data: flags } = useFeatureFlags()
+  const multiTournamentEnabled = flags?.multiTournamentEnabled ?? false
 
   const handleImport = async (tournament: AvailableTournament) => {
     setImporting(tournament.id)
@@ -131,6 +134,16 @@ export default function AdminTournaments() {
   return (
     <div className="min-h-screen bg-raw-white py-8">
       <div className="max-w-7xl mx-auto px-4">
+        {!multiTournamentEnabled && (
+          <Card variant="elevated" className="mb-8 bg-yellow-50 border-yellow-600">
+            <h2 className="font-headline text-2xl uppercase mb-3">WORLD CUP ONLY MODE</h2>
+            <p className="font-body text-gray-800">
+              Multi-tournament import is currently disabled by feature flag. Use Admin Settings to
+              re-enable imports when needed.
+            </p>
+          </Card>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-headline text-5xl uppercase mb-4">IMPORT TOURNAMENTS</h1>
@@ -249,7 +262,7 @@ export default function AdminTournaments() {
                 <Button
                   variant="primary"
                   onClick={() => handleImport(tournament)}
-                  disabled={isImporting || isImported}
+                  disabled={!multiTournamentEnabled || isImporting || isImported}
                   className="w-full"
                 >
                   {isCurrentlyImporting ? (
@@ -257,6 +270,8 @@ export default function AdminTournaments() {
                       <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                       IMPORTING...
                     </span>
+                  ) : !multiTournamentEnabled ? (
+                    'DISABLED IN WORLD CUP MODE'
                   ) : isImported ? (
                     'ALREADY IMPORTED'
                   ) : (

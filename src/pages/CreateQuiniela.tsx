@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCreateQuiniela } from '@/hooks/useQuinielas'
 import { useFixtures } from '@/hooks/useFixtures'
+import { useActiveTournament } from '@/hooks/useActiveTournament'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
@@ -17,7 +18,8 @@ export default function CreateQuiniela() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { data: fixtures, isLoading: loadingFixtures } = useFixtures()
+  const { activeTournamentId } = useActiveTournament()
+  const { data: fixtures, isLoading: loadingFixtures } = useFixtures(activeTournamentId || undefined)
   const createQuiniela = useCreateQuiniela()
 
   const [formData, setFormData] = useState({
@@ -36,8 +38,10 @@ export default function CreateQuiniela() {
     // Get the first match date based on selection
     let firstMatch = fixtures[0]
     if (formData.matchSelection === 'knockout') {
-      // Round of 16 starts around match 49
-      firstMatch = fixtures.find(f => f.round === 'Round of 16') || fixtures[0]
+      firstMatch =
+        fixtures.find((f) => f.round === 'Round of 32') ||
+        fixtures.find((f) => f.round === 'Round of 16') ||
+        fixtures[0]
     }
     
     // Deadline is 1 hour before first match
@@ -55,7 +59,6 @@ export default function CreateQuiniela() {
         return fixtures
           .filter(f => f.round === 'Group Stage')
           .map(f => f.id)
-          .slice(0, 48) // First 48 matches are group stage
       case 'knockout':
         return fixtures
           .filter(f => f.round !== 'Group Stage')
@@ -109,13 +112,15 @@ export default function CreateQuiniela() {
   }
 
   const getMatchCount = () => {
+    if (!fixtures) return 0
+
     switch (formData.matchSelection) {
       case 'group-stage':
-        return 48
+        return fixtures.filter((f) => f.round === 'Group Stage').length
       case 'knockout':
-        return 16
+        return fixtures.filter((f) => f.round !== 'Group Stage').length
       case 'all':
-        return 64
+        return fixtures.length
       default:
         return 0
     }

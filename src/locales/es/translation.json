@@ -72,6 +72,8 @@
   },
   "fixtures": {
     "title": "Partidos",
+    "tournament": "Copa Mundial",
+    "subtitle": "calendario de partidos, marcadores en vivo y resultados finales",
     "today": "Partidos de Hoy",
     "upcoming": "Próximos",
     "results": "Resultados",
@@ -114,6 +116,9 @@
   },
   "standings": {
     "title": "Clasificación",
+    "tournament": "Copa Mundial",
+    "subtitle": "clasificación de grupos",
+    "noData": "No hay datos de clasificación disponibles",
     "group": "Grupo",
     "team": "Equipo",
     "played": "PJ",
@@ -124,7 +129,25 @@
     "goalsAgainst": "GC",
     "goalDifference": "DG",
     "points": "Pts",
-    "position": "Pos"
+    "position": "Pos",
+    "qualifiedForKnockout": "Plazas de clasificación a fase eliminatoria",
+    "abbreviations": "Abreviaturas",
+    "abbr": {
+      "played": "PJ",
+      "wins": "PG",
+      "draws": "PE",
+      "losses": "PP",
+      "goalDifference": "DG",
+      "points": "Pts"
+    },
+    "labels": {
+      "played": "Partidos jugados",
+      "wins": "Victorias",
+      "draws": "Empates",
+      "losses": "Derrotas",
+      "goalDifference": "Diferencia de goles",
+      "points": "Puntos"
+    }
   },
   "teams": {
     "title": "Equipos",
@@ -224,8 +247,8 @@
     "descriptionPlaceholder": "Agrega detalles sobre tu quiniela, reglas, premios, etc.",
     "whichMatches": "¿Qué Partidos?",
     "groupStageOnly": "Solo Fase de Grupos (48 partidos)",
-    "knockoutStageOnly": "Solo Fase Eliminatoria (16 partidos)",
-    "allMatches": "Todos los Partidos (64 partidos)",
+    "knockoutStageOnly": "Solo Fase Eliminatoria (32 partidos)",
+    "allMatches": "Todos los Partidos (104 partidos)",
     "participantsWillPredict": "Los participantes predecirán {{count}} partidos",
     "privacySettings": "Configuración de Privacidad",
     "makePublic": "Hacer pública esta quiniela",

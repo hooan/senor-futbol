@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS teams (
   api_team_id   INTEGER,
   name          TEXT NOT NULL,
   code          TEXT NOT NULL,  -- 3-letter code, e.g. USA, MEX, ARG
+  group_name    TEXT,
   logo_url      TEXT,
   created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -142,6 +143,14 @@ CREATE TABLE IF NOT EXISTS api_request_log (
   UNIQUE(endpoint, request_date)
 );
 
+CREATE TABLE IF NOT EXISTS app_settings (
+  key         TEXT PRIMARY KEY,
+  value_json  JSONB NOT NULL DEFAULT '{}'::jsonb,
+  description TEXT,
+  updated_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS match_events (
   id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fixture_id           UUID NOT NULL REFERENCES fixtures(id) ON DELETE CASCADE,
@@ -207,6 +216,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_api_tournament
 
 CREATE INDEX IF NOT EXISTS idx_tournaments_season          ON tournaments(season DESC);
 CREATE INDEX IF NOT EXISTS idx_teams_tournament            ON teams(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_teams_group_name            ON teams(group_name);
 CREATE INDEX IF NOT EXISTS idx_fixtures_tournament         ON fixtures(tournament_id);
 CREATE INDEX IF NOT EXISTS idx_fixtures_match_date         ON fixtures(match_date);
 CREATE INDEX IF NOT EXISTS idx_fixtures_status             ON fixtures(status);
@@ -228,6 +238,7 @@ CREATE INDEX IF NOT EXISTS idx_match_statistics_fixture    ON match_statistics(f
 CREATE INDEX IF NOT EXISTS idx_match_statistics_team       ON match_statistics(team_id);
 CREATE INDEX IF NOT EXISTS idx_players_team                ON players(team_id);
 CREATE INDEX IF NOT EXISTS idx_players_api_id              ON players(api_player_id);
+CREATE INDEX IF NOT EXISTS idx_app_settings_updated_at     ON app_settings(updated_at DESC);
 
 
 -- =====================================================
@@ -247,6 +258,7 @@ ALTER TABLE match_events         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE match_lineups        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE match_statistics     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE players              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE app_settings         ENABLE ROW LEVEL SECURITY;
 
 -- Tournaments
 CREATE POLICY "Tournaments viewable by everyone" ON tournaments
@@ -261,6 +273,18 @@ CREATE POLICY "Teams are viewable by everyone" ON teams
   FOR SELECT USING (true);
 CREATE POLICY "Fixtures are viewable by everyone" ON fixtures
   FOR SELECT USING (true);
+CREATE POLICY "Admins can insert fixtures" ON fixtures
+  FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
+  );
+CREATE POLICY "Admins can update fixtures" ON fixtures
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
+  );
+CREATE POLICY "Admins can delete fixtures" ON fixtures
+  FOR DELETE USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
+  );
 CREATE POLICY "Standings are viewable by everyone" ON standings
   FOR SELECT USING (true);
 
@@ -334,6 +358,22 @@ CREATE POLICY "Admins can view API logs" ON api_request_log
     (SELECT is_admin FROM users WHERE id = auth.uid())
   );
 
+-- App Settings
+CREATE POLICY "App settings viewable by everyone" ON app_settings
+  FOR SELECT USING (true);
+CREATE POLICY "Admins can insert app settings" ON app_settings
+  FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
+  );
+CREATE POLICY "Admins can update app settings" ON app_settings
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
+  );
+CREATE POLICY "Admins can delete app settings" ON app_settings
+  FOR DELETE USING (
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
+  );
+
 -- Match Events
 CREATE POLICY "Match events viewable by everyone" ON match_events
   FOR SELECT USING (true);
@@ -397,6 +437,14 @@ CREATE POLICY "Admins can delete players" ON players
   FOR DELETE USING (
     EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = true)
   );
+
+INSERT INTO app_settings (key, value_json, description)
+VALUES (
+  'multi_tournament_enabled',
+  '{"enabled": false}'::jsonb,
+  'Controls whether public app can switch across tournaments'
+)
+ON CONFLICT (key) DO NOTHING;
 
 
 -- =====================================================
@@ -540,3 +588,4 @@ COMMENT ON TABLE match_events         IS 'Goals, cards, substitutions, and VAR e
 COMMENT ON TABLE match_lineups        IS 'Starting XI and substitutes per match';
 COMMENT ON TABLE match_statistics     IS 'Team-level stats per match (possession, shots, etc.)';
 COMMENT ON TABLE players              IS 'Team rosters and squad data';
+COMMENT ON TABLE app_settings         IS 'Global application settings and feature flags';

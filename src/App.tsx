@@ -36,6 +36,9 @@ import AdminNewsForm from '@/pages/admin/AdminNewsForm'
 import AdminUsers from '@/pages/admin/AdminUsers'
 import AdminTournaments from '@/pages/admin/AdminTournaments'
 import AdminNewsSources from '@/pages/admin/AdminNewsSources'
+import AdminSettings from '@/pages/admin/AdminSettings'
+import AdminFixtures from '@/pages/admin/AdminFixtures'
+import AdminRosters from '@/pages/admin/AdminRosters'
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -129,6 +132,21 @@ function App() {
             <Route path="admin/news-sources" element={
               <AdminRoute>
                 <AdminNewsSources />
+              </AdminRoute>
+            } />
+            <Route path="admin/settings" element={
+              <AdminRoute>
+                <AdminSettings />
+              </AdminRoute>
+            } />
+            <Route path="admin/fixtures" element={
+              <AdminRoute>
+                <AdminFixtures />
+              </AdminRoute>
+            } />
+            <Route path="admin/rosters" element={
+              <AdminRoute>
+                <AdminRosters />
               </AdminRoute>
             } />
             

@@ -72,6 +72,8 @@
   },
   "fixtures": {
     "title": "Fixtures",
+    "tournament": "World Cup",
+    "subtitle": "Match schedule, live scores, and final results",
     "today": "Today's Matches",
     "upcoming": "Upcoming",
     "results": "Results",
@@ -114,6 +116,9 @@
   },
   "standings": {
     "title": "Standings",
+    "tournament": "World Cup",
+    "subtitle": "group standings",
+    "noData": "No standings data available",
     "group": "Group",
     "team": "Team",
     "played": "P",
@@ -124,7 +129,25 @@
     "goalsAgainst": "GA",
     "goalDifference": "GD",
     "points": "Pts",
-    "position": "Pos"
+    "position": "Pos",
+    "qualifiedForKnockout": "Knockout qualification places",
+    "abbreviations": "Abbreviations",
+    "abbr": {
+      "played": "P",
+      "wins": "W",
+      "draws": "D",
+      "losses": "L",
+      "goalDifference": "GD",
+      "points": "Pts"
+    },
+    "labels": {
+      "played": "Played",
+      "wins": "Wins",
+      "draws": "Draws",
+      "losses": "Losses",
+      "goalDifference": "Goal Difference",
+      "points": "Points"
+    }
   },
   "teams": {
     "title": "Teams",
@@ -225,8 +248,8 @@
     "descriptionPlaceholder": "Add details about your quiniela, rules, prizes, etc.",
     "whichMatches": "Which Matches?",
     "groupStageOnly": "Group Stage Only (48 matches)",
-    "knockoutStageOnly": "Knockout Stage Only (16 matches)",
-    "allMatches": "All Matches (64 matches)",
+    "knockoutStageOnly": "Knockout Stage Only (32 matches)",
+    "allMatches": "All Matches (104 matches)",
     "participantsWillPredict": "Participants will predict {{count}} matches",
     "privacySettings": "Privacy Settings",
     "makePublic": "Make this quiniela public",
