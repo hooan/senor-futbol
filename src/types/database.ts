@@ -109,7 +109,7 @@ export interface QuinielaPrediction {
   id: string
   quiniela_id: string
   user_id: string | null
-  guest_name: string | null
+  participant_id: string
   fixture_id: string
   predicted_home_score: number
   predicted_away_score: number
@@ -126,6 +126,8 @@ export interface QuinielaParticipant {
   quiniela_id: string
   user_id: string | null
   guest_name: string | null
+  /** Present when returned by joinQuiniela(); omitted in list/leaderboard queries. */
+  guest_token?: string
   joined_at: string
   total_points: number
   // Joined data
@@ -194,7 +196,6 @@ export interface MakePredictionInput {
   fixture_id: string
   predicted_home_score: number
   predicted_away_score: number
-  guest_name?: string // For non-registered users
 }
 
 export interface CreateNewsInput {

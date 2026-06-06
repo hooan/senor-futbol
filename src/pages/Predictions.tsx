@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuiniela, useQuinielaFixtures, useUserPredictions, useMakePrediction } from '@/hooks/useQuinielas'
 import { useAuth } from '@/contexts/AuthContext'
+import { guestSession } from '@/lib/guestSession'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
@@ -21,11 +22,25 @@ interface PredictionFormData {
 export default function Predictions() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
-  
+
+  // Resolve guest token: URL param takes precedence (cross-device restore),
+  // then fall back to localStorage.
+  const guestToken = useMemo(() => {
+    const url = searchParams.get('guest_token')
+    if (url) return url
+    if (id) return guestSession.get(id)?.guest_token ?? null
+    return null
+  }, [searchParams, id])
+
   const { data: quiniela, isLoading: loadingQuiniela } = useQuiniela(id)
   const { data: fixtures, isLoading: loadingFixtures } = useQuinielaFixtures(id)
-  const { data: existingPredictions, isLoading: loadingPredictions } = useUserPredictions(id, user?.id || null)
+  const { data: existingPredictions, isLoading: loadingPredictions } = useUserPredictions(
+    id,
+    user?.id || null,
+    guestToken
+  )
   const makePrediction = useMakePrediction()
 
   const [predictions, setPredictions] = useState<PredictionFormData>({})
@@ -48,9 +63,7 @@ export default function Predictions() {
   }, [existingPredictions, fixtures])
 
   const handleScoreChange = (fixtureId: string, field: 'home_score' | 'away_score', value: string) => {
-    // Only allow numbers 0-9
     if (value !== '' && !/^\d+$/.test(value)) return
-    // Max 2 digits
     if (value.length > 2) return
 
     setPredictions((prev) => ({
@@ -61,7 +74,6 @@ export default function Predictions() {
       },
     }))
 
-    // Remove from saved set when user modifies
     setSavedFixtures((prev) => {
       const newSet = new Set(prev)
       newSet.delete(fixtureId)
@@ -93,6 +105,7 @@ export default function Predictions() {
     try {
       await makePrediction.mutateAsync({
         userId: user?.id || null,
+        guestToken,
         input: {
           quiniela_id: quiniela.id,
           fixture_id: fixtureId,
@@ -101,7 +114,6 @@ export default function Predictions() {
         },
       })
 
-      // Mark as saved
       setSavedFixtures((prev) => new Set(prev).add(fixtureId))
       setError('')
     } catch (err) {
@@ -111,14 +123,13 @@ export default function Predictions() {
     }
   }
 
+  // Lock per-match at kick-off — quiniela deadline governs joining only
   const canPredict = (fixture: FixtureWithTeams) => {
-    const matchDate = new Date(fixture.match_date)
-    return !isPast(matchDate) && !isPast(new Date(quiniela?.deadline || ''))
+    return !isPast(new Date(fixture.match_date))
   }
 
   const getPredictionStatus = (fixture: FixtureWithTeams): 'saved' | 'partial' | 'empty' | 'locked' => {
     if (!canPredict(fixture)) return 'locked'
-    
     const pred = predictions[fixture.id]
     if (!pred || (pred.home_score === '' && pred.away_score === '')) return 'empty'
     if (savedFixtures.has(fixture.id)) return 'saved'
@@ -134,26 +145,21 @@ export default function Predictions() {
 
   const groupFixturesByRound = () => {
     if (!fixtures) return {}
-    
     const grouped: Record<string, FixtureWithTeams[]> = {}
     fixtures.forEach((fixture) => {
-      if (!grouped[fixture.round]) {
-        grouped[fixture.round] = []
-      }
+      if (!grouped[fixture.round]) grouped[fixture.round] = []
       grouped[fixture.round].push(fixture)
     })
-    
     return grouped
   }
 
   const countPredictions = () => {
     if (!fixtures) return { total: 0, saved: 0, pending: 0 }
-    
     const total = fixtures.length
-    const saved = fixtures.filter((f) => savedFixtures.has(f.id) || existingPredictions?.some(p => p.fixture_id === f.id)).length
-    const pending = total - saved
-    
-    return { total, saved, pending }
+    const saved = fixtures.filter((f) =>
+      savedFixtures.has(f.id) || existingPredictions?.some((p) => p.fixture_id === f.id)
+    ).length
+    return { total, saved, pending: total - saved }
   }
 
   if (loadingQuiniela || loadingFixtures || loadingPredictions) {
@@ -178,9 +184,26 @@ export default function Predictions() {
     )
   }
 
+  // Guard: unauthenticated visitor with no guest token hasn't joined
+  if (!user && !guestToken) {
+    return (
+      <div className="min-h-screen bg-raw-white flex items-center justify-center px-4">
+        <Card className="max-w-md text-center">
+          <h2 className="font-headline text-2xl uppercase mb-4">
+            {t('quinielas.joinThisQuiniela').toUpperCase()}
+          </h2>
+          <p className="text-gray-700 mb-6">{t('quinielas.youreInDesc')}</p>
+          <Link to={`/quinielas/${quiniela.share_code}`}>
+            <Button size="large">{t('quinielas.joinNow').toUpperCase()}</Button>
+          </Link>
+        </Card>
+      </div>
+    )
+  }
+
   const groupedFixtures = groupFixturesByRound()
   const stats = countPredictions()
-  const deadlinePassed = isPast(new Date(quiniela.deadline))
+  const joiningClosed = isPast(new Date(quiniela.deadline))
 
   return (
     <div className="min-h-screen bg-raw-white">
@@ -224,21 +247,21 @@ export default function Predictions() {
           </div>
         </Card>
 
-        {/* Deadline Warning */}
-        {deadlinePassed ? (
-          <div className="bg-red-50 border-thick border-red-600 p-6 mb-8">
+        {/* Info Banner */}
+        {joiningClosed ? (
+          <div className="bg-yellow-50 border-thick border-yellow-600 p-6 mb-8">
             <div className="flex items-start gap-3">
-              <svg className="w-6 h-6 text-red-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-6 h-6 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                   clipRule="evenodd"
                 />
               </svg>
               <div>
-                <h3 className="font-semibold text-red-900 mb-1">{t('quinielas.deadlineHasPassed')}</h3>
-                <p className="text-red-800 text-sm">
-                  {t('quinielas.deadlinePassedPredictions')}
+                <h3 className="font-semibold text-yellow-900 mb-1">{t('quinielas.joiningClosed')}</h3>
+                <p className="text-yellow-800 text-sm">
+                  {t('quinielas.joiningClosedPredictions')}
                 </p>
               </div>
             </div>
@@ -256,7 +279,7 @@ export default function Predictions() {
               <div>
                 <h3 className="font-semibold text-blue-900 mb-1">{t('quinielas.makePredictionsPrompt')}</h3>
                 <p className="text-blue-800 text-sm">
-                  {t('quinielas.makePredictionsDeadline', { deadline: format(new Date(quiniela.deadline), 'MMM d, yyyy h:mm a') })}
+                  {t('quinielas.predictionsLockPerMatch')}
                 </p>
               </div>
             </div>
@@ -311,9 +334,7 @@ export default function Predictions() {
                               src={fixture.home_team.logo_url || ''}
                               alt={fixture.home_team.name}
                               className="w-6 h-6 object-contain"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none'
-                              }}
+                              onError={(e) => { e.currentTarget.style.display = 'none' }}
                             />
                             <span className="font-semibold">{fixture.home_team.name}</span>
                             {fixture.status === 'FT' && (
@@ -328,9 +349,7 @@ export default function Predictions() {
                               src={fixture.away_team.logo_url || ''}
                               alt={fixture.away_team.name}
                               className="w-6 h-6 object-contain"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none'
-                              }}
+                              onError={(e) => { e.currentTarget.style.display = 'none' }}
                             />
                             <span className="font-semibold">{fixture.away_team.name}</span>
                             {fixture.status === 'FT' && (

@@ -1,9 +1,11 @@
-import { useState, FormEvent } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect, FormEvent } from 'react'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useQuinielaByShareCode, useJoinQuiniela, useIsParticipant, useParticipants } from '@/hooks/useQuinielas'
+import { useQuiniela, useQuinielaByShareCode, useJoinQuiniela, useIsParticipant, useParticipants } from '@/hooks/useQuinielas'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
+import { guestSession, type GuestSession } from '@/lib/guestSession'
+import { quinielaService } from '@/services/quinielaService'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
@@ -13,17 +15,64 @@ import CopyButton from '@/components/ui/CopyButton'
 import ShareButtons from '@/components/ui/ShareButtons'
 import { format } from 'date-fns'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export default function QuinielaDetail() {
   const { t } = useTranslation()
   const { shareCode } = useParams<{ shareCode: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { showToast } = useToast()
-  
-  const { data: quiniela, isLoading } = useQuinielaByShareCode(shareCode)
-  const { data: isParticipant } = useIsParticipant(quiniela?.id, user?.id || null)
+
+  const isUuid = !!shareCode && UUID_RE.test(shareCode)
+
+  const { data: quinielaById, isLoading: loadingById } = useQuiniela(isUuid ? shareCode : undefined)
+  const { data: quinielaByCode, isLoading: loadingByCode } = useQuinielaByShareCode(!isUuid ? shareCode : undefined)
+
+  const quiniela = isUuid ? quinielaById : quinielaByCode
+  const isLoading = isUuid ? loadingById : loadingByCode
+
+  const { data: isAuthParticipant } = useIsParticipant(quiniela?.id, user?.id || null)
   const { data: participants } = useParticipants(quiniela?.id)
   const joinMutation = useJoinQuiniela()
+
+  // ── Guest session ────────────────────────────────────────────────────────
+  const [storedSession, setStoredSession] = useState<GuestSession | null>(null)
+  const [restoringSession, setRestoringSession] = useState(false)
+
+  useEffect(() => {
+    if (!quiniela) return
+
+    // 1. Check localStorage first (same device)
+    const local = guestSession.get(quiniela.id)
+    if (local) {
+      setStoredSession(local)
+      return
+    }
+
+    // 2. Check URL for cross-device token restore
+    const urlToken = searchParams.get('guest_token')
+    if (!urlToken) return
+
+    setRestoringSession(true)
+    quinielaService.getParticipantByGuestToken(urlToken).then((participant) => {
+      if (participant && participant.quiniela_id === quiniela.id) {
+        const session: GuestSession = {
+          participant_id: participant.id,
+          // Use the URL token directly — getParticipantByGuestToken no longer returns guest_token
+          guest_token: urlToken,
+          guest_name: participant.guest_name ?? '',
+        }
+        guestSession.set(quiniela.id, session)
+        setStoredSession(session)
+      }
+      setRestoringSession(false)
+    })
+  }, [quiniela?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isParticipant = !!(isAuthParticipant || storedSession)
+  // ─────────────────────────────────────────────────────────────────────────
 
   const [guestName, setGuestName] = useState('')
   const [error, setError] = useState('')
@@ -31,29 +80,47 @@ export default function QuinielaDetail() {
 
   const isPastDeadline = quiniela ? new Date(quiniela.deadline) < new Date() : false
 
+  const predictionsPath = (quinielaId: string) => {
+    if (storedSession) {
+      return `/quinielas/${quinielaId}/predictions?guest_token=${storedSession.guest_token}`
+    }
+    return `/quinielas/${quinielaId}/predictions`
+  }
+
   const handleJoin = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 
     if (!quiniela) return
 
-    // If not logged in, require guest name
     if (!user && (!guestName || guestName.trim().length < 2)) {
       setError(t('validation.minLength', { count: 2 }))
       return
     }
 
     try {
-      await joinMutation.mutateAsync({
+      const participant = await joinMutation.mutateAsync({
         quinielaId: quiniela.id,
         userId: user?.id || null,
         guestName: !user && guestName ? guestName.trim() : null,
       })
-      
+
       showToast(t('messages.success'), 'success')
-      
-      // Success! Navigate to predictions page
-      navigate(`/quinielas/${quiniela.id}/predictions`)
+
+      if (!user) {
+        // joinQuiniela always returns guest_token (it's the row we just inserted)
+        const token = participant.guest_token!
+        const session: GuestSession = {
+          participant_id: participant.id,
+          guest_token: token,
+          guest_name: participant.guest_name ?? guestName.trim(),
+        }
+        guestSession.set(quiniela.id, session)
+        setStoredSession(session)
+        navigate(`/quinielas/${quiniela.id}/predictions?guest_token=${token}`)
+      } else {
+        navigate(`/quinielas/${quiniela.id}/predictions`)
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : t('quinielas.failedToSavePrediction')
       setError(errorMsg)
@@ -61,7 +128,7 @@ export default function QuinielaDetail() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || restoringSession) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loading />
@@ -134,7 +201,7 @@ export default function QuinielaDetail() {
             {!isParticipant && (
               <Card className="bg-gradient-to-br from-blue-50 to-white border-thick border-blue-600">
                 <h2 className="font-headline text-2xl uppercase mb-4">{t('quinielas.joinThisQuiniela').toUpperCase()}</h2>
-                
+
                 {isPastDeadline ? (
                   <div className="bg-red-50 border-thick border-red-600 p-6">
                     <div className="flex items-start gap-3">
@@ -229,11 +296,16 @@ export default function QuinielaDetail() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-headline text-xl uppercase mb-2">{t('quinielas.youreIn').toUpperCase()}</h3>
+                    {storedSession && (
+                      <p className="text-sm text-gray-600 mb-2 font-mono">
+                        {storedSession.guest_name}
+                      </p>
+                    )}
                     <p className="text-gray-700 mb-4">
                       {t('quinielas.youreInDesc')}
                     </p>
                     <div className="flex flex-wrap gap-3">
-                      <Link to={`/quinielas/${quiniela.id}/predictions`}>
+                      <Link to={predictionsPath(quiniela.id)}>
                         <Button>{t('quinielas.makePredictions').toUpperCase()}</Button>
                       </Link>
                       <Link to={`/quinielas/${quiniela.id}/leaderboard`}>

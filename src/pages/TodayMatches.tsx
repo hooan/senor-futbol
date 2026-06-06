@@ -22,8 +22,8 @@ export default function TodayMatches() {
       {/* Header */}
       <section className="border-b-thick border-raw-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-center gap-4 mb-4">
-            <h1 className="font-headline text-5xl md:text-6xl uppercase">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl uppercase">
               TODAY'S MATCHES
             </h1>
             {liveFixtures.length > 0 && (

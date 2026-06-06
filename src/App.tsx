@@ -70,7 +70,7 @@ function App() {
             <Route path="fixtures" element={<Fixtures />} />
             <Route path="fixtures/:id" element={<MatchDetail />} />
             <Route path="fixtures/today" element={<TodayMatches />} />
-            <Route path="fixtures/results" element={<div className="p-8">Results - Coming Soon</div>} />
+            <Route path="fixtures/results" element={<Navigate to="/fixtures" replace />} />
             
             {/* Teams Route */}
             <Route path="teams/:id" element={<TeamDetail />} />

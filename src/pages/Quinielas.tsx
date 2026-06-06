@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePublicQuinielas } from '@/hooks/useQuinielas'
 import { useAuth } from '@/contexts/AuthContext'
@@ -10,23 +10,31 @@ import Input from '@/components/ui/Input'
 
 export default function Quinielas() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { data: quinielas, isLoading } = usePublicQuinielas()
   const { user } = useAuth()
   const [shareCodeInput, setShareCodeInput] = useState('')
 
   const handleJoinByCode = () => {
-    if (shareCodeInput.trim()) {
-      window.location.href = `/quinielas/${shareCodeInput.trim().toUpperCase()}`
+    const code = shareCodeInput.trim().toUpperCase()
+    if (code) {
+      navigate(`/quinielas/${code}`)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleJoinByCode()
     }
   }
 
   return (
     <div className="min-h-screen bg-raw-white">
       {/* Hero Section */}
-      <div className="bg-raw-black text-raw-white py-16 border-b-thick border-raw-black">
+      <div className="bg-raw-black text-raw-white py-10 sm:py-16 border-b-thick border-raw-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
-            <h1 className="font-headline text-5xl sm:text-6xl uppercase mb-4">{t('quinielas.title').toUpperCase()}</h1>
+            <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl uppercase mb-4">{t('quinielas.title').toUpperCase()}</h1>
             <p className="font-body text-lg sm:text-xl mb-8 text-gray-300">
               {t('quinielas.intro')}
             </p>
@@ -62,6 +70,7 @@ export default function Quinielas() {
                 placeholder={t('quinielas.enterShareCode')}
                 value={shareCodeInput}
                 onChange={(e) => setShareCodeInput(e.target.value.toUpperCase())}
+                onKeyDown={handleKeyDown}
                 className="font-mono uppercase"
                 maxLength={10}
               />
@@ -74,8 +83,8 @@ export default function Quinielas() {
 
         {/* Public Quinielas List */}
         <div>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="font-headline text-3xl uppercase">{t('quinielas.publicQuinielas').toUpperCase()}</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+            <h2 className="font-headline text-2xl sm:text-3xl uppercase">{t('quinielas.publicQuinielas').toUpperCase()}</h2>
             <span className="text-sm text-gray-600 font-mono">
               {quinielas?.length || 0} {t('quinielas.available')}
             </span>

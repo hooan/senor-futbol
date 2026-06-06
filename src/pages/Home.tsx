@@ -14,9 +14,9 @@ export default function Home() {
     <div className="bg-raw-white">
       {/* Hero Section */}
       <section className="border-b-thick border-raw-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24">
           <div className="max-w-4xl">
-            <h1 className="font-headline text-6xl md:text-8xl leading-none mb-6 uppercase tracking-tight">
+            <h1 className="font-headline text-5xl sm:text-6xl md:text-8xl leading-none mb-6 uppercase tracking-tight">
               {t('home.title')}
             </h1>
             <p className="font-body text-xl leading-relaxed mb-8">
@@ -65,8 +65,8 @@ export default function Home() {
       {/* Featured Content */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="font-headline text-4xl uppercase tracking-tight">
+          <div className="flex justify-between items-center mb-8 sm:mb-12 gap-4 flex-wrap">
+            <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight">
               {t('home.latestNews')}
             </h2>
             <Link to="/news">
@@ -86,7 +86,7 @@ export default function Home() {
             </div>
           ) : null}
           
-          <h2 className="font-headline text-4xl mb-12 uppercase tracking-tight">
+          <h2 className="font-headline text-2xl sm:text-3xl md:text-4xl mb-8 sm:mb-12 uppercase tracking-tight">
             {t('home.features')}
           </h2>
           

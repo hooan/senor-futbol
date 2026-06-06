@@ -81,7 +81,7 @@ export default function MatchDetail() {
           </div>
 
           {/* Match Info */}
-          <div className="flex items-center gap-2 text-sm font-mono text-gray-600">
+          <div className="flex items-center gap-2 flex-wrap text-sm font-mono text-gray-600">
             <span className="uppercase">{fixture.round}</span>
             {fixture.group_name && (
               <>
@@ -108,34 +108,34 @@ export default function MatchDetail() {
       {/* Score Header */}
       <section className="border-b-thick border-raw-black bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-3 gap-8 items-center">
+          <div className="grid grid-cols-3 gap-4 md:gap-8 items-center">
             {/* Home Team */}
             <div className="text-center">
-              <div className="w-20 h-20 border-thick border-raw-black mx-auto mb-4 flex items-center justify-center">
-                <span className="font-mono text-2xl">{fixture.home_team.code}</span>
+              <div className="w-14 h-14 md:w-20 md:h-20 border-thick border-raw-black mx-auto mb-3 md:mb-4 flex items-center justify-center">
+                <span className="font-mono text-lg md:text-2xl">{fixture.home_team.code}</span>
               </div>
-              <h2 className="font-headline text-2xl uppercase">{fixture.home_team.name}</h2>
+              <h2 className="font-headline text-base sm:text-xl md:text-2xl uppercase leading-tight">{fixture.home_team.name}</h2>
             </div>
 
             {/* Score */}
             <div className="text-center">
               {fixture.status === 'FT' || fixture.status === 'LIVE' ? (
-                <div className="flex items-center justify-center gap-6">
-                  <span className="font-headline text-6xl">{fixture.home_score ?? 0}</span>
-                  <span className="font-headline text-4xl text-gray-400">-</span>
-                  <span className="font-headline text-6xl">{fixture.away_score ?? 0}</span>
+                <div className="flex items-center justify-center gap-3 md:gap-6">
+                  <span className="font-headline text-4xl md:text-6xl">{fixture.home_score ?? 0}</span>
+                  <span className="font-headline text-2xl md:text-4xl text-gray-400">-</span>
+                  <span className="font-headline text-4xl md:text-6xl">{fixture.away_score ?? 0}</span>
                 </div>
               ) : (
-                <p className="font-headline text-2xl text-gray-500 uppercase">VS</p>
+                <p className="font-headline text-xl md:text-2xl text-gray-500 uppercase">VS</p>
               )}
             </div>
 
             {/* Away Team */}
             <div className="text-center">
-              <div className="w-20 h-20 border-thick border-raw-black mx-auto mb-4 flex items-center justify-center">
-                <span className="font-mono text-2xl">{fixture.away_team.code}</span>
+              <div className="w-14 h-14 md:w-20 md:h-20 border-thick border-raw-black mx-auto mb-3 md:mb-4 flex items-center justify-center">
+                <span className="font-mono text-lg md:text-2xl">{fixture.away_team.code}</span>
               </div>
-              <h2 className="font-headline text-2xl uppercase">{fixture.away_team.name}</h2>
+              <h2 className="font-headline text-base sm:text-xl md:text-2xl uppercase leading-tight">{fixture.away_team.name}</h2>
             </div>
           </div>
         </div>

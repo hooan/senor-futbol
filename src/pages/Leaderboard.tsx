@@ -1,6 +1,8 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useMemo } from 'react'
 import { useQuiniela, useLeaderboard, useQuinielaFixtures } from '@/hooks/useQuinielas'
+import { guestSession } from '@/lib/guestSession'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
@@ -9,6 +11,15 @@ import Badge from '@/components/ui/Badge'
 export default function Leaderboard() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
+
+  // Resolve guest token so the "View My Predictions" link carries it
+  const guestToken = useMemo(() => {
+    const url = searchParams.get('guest_token')
+    if (url) return url
+    if (id) return guestSession.get(id)?.guest_token ?? null
+    return null
+  }, [searchParams, id])
   
   const { data: quiniela, isLoading: loadingQuiniela } = useQuiniela(id)
   const { data: leaderboard, isLoading: loadingLeaderboard } = useLeaderboard(id)
@@ -280,7 +291,7 @@ export default function Leaderboard() {
         {/* Bottom Actions */}
         <div className="mt-12 pt-8 border-t-thick border-gray-300">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={`/quinielas/${quiniela.id}/predictions`}>
+            <Link to={`/quinielas/${quiniela.id}/predictions${guestToken ? `?guest_token=${guestToken}` : ''}`}>
               <Button size="large">{t('quinielas.viewMyPredictions').toUpperCase()}</Button>
             </Link>
             <Link to={`/quinielas/${quiniela.share_code}`}>

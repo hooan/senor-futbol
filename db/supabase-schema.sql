@@ -111,13 +111,14 @@ CREATE TABLE IF NOT EXISTS quiniela_predictions (
   id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   quiniela_id          UUID REFERENCES quinielas(id) ON DELETE CASCADE,
   user_id              UUID REFERENCES users(id) ON DELETE CASCADE,
+  participant_id       UUID NOT NULL REFERENCES quiniela_participants(id) ON DELETE CASCADE,
   fixture_id           UUID REFERENCES fixtures(id) ON DELETE CASCADE,
   predicted_home_score INTEGER NOT NULL,
   predicted_away_score INTEGER NOT NULL,
   points_earned        INTEGER DEFAULT 0,
   created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(quiniela_id, user_id, fixture_id)
+  CONSTRAINT quiniela_predictions_participant_fixture_uniq UNIQUE(quiniela_id, participant_id, fixture_id)
 );
 
 CREATE TABLE IF NOT EXISTS quiniela_participants (
@@ -125,6 +126,7 @@ CREATE TABLE IF NOT EXISTS quiniela_participants (
   quiniela_id UUID REFERENCES quinielas(id) ON DELETE CASCADE,
   user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
   guest_name  TEXT,
+  guest_token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   joined_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   total_points INTEGER DEFAULT 0,
   UNIQUE(quiniela_id, user_id),
@@ -132,6 +134,14 @@ CREATE TABLE IF NOT EXISTS quiniela_participants (
     (user_id IS NOT NULL AND guest_name IS NULL) OR
     (user_id IS NULL AND guest_name IS NOT NULL)
   )
+);
+
+CREATE TABLE IF NOT EXISTS quiniela_fixtures (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  quiniela_id UUID NOT NULL REFERENCES quinielas(id) ON DELETE CASCADE,
+  fixture_id  UUID NOT NULL REFERENCES fixtures(id)  ON DELETE CASCADE,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(quiniela_id, fixture_id)
 );
 
 CREATE TABLE IF NOT EXISTS api_request_log (
@@ -229,6 +239,10 @@ CREATE INDEX IF NOT EXISTS idx_news_published              ON news(is_published,
 CREATE INDEX IF NOT EXISTS idx_quinielas_share_code        ON quinielas(share_code);
 CREATE INDEX IF NOT EXISTS idx_quiniela_predictions_user   ON quiniela_predictions(user_id);
 CREATE INDEX IF NOT EXISTS idx_quiniela_participants_quiniela ON quiniela_participants(quiniela_id);
+CREATE INDEX IF NOT EXISTS idx_quiniela_participants_guest_token ON quiniela_participants(guest_token);
+CREATE INDEX IF NOT EXISTS idx_quiniela_predictions_participant  ON quiniela_predictions(participant_id);
+CREATE INDEX IF NOT EXISTS idx_quiniela_fixtures_quiniela   ON quiniela_fixtures(quiniela_id);
+CREATE INDEX IF NOT EXISTS idx_quiniela_fixtures_fixture    ON quiniela_fixtures(fixture_id);
 CREATE INDEX IF NOT EXISTS idx_match_events_fixture        ON match_events(fixture_id);
 CREATE INDEX IF NOT EXISTS idx_match_events_team           ON match_events(team_id);
 CREATE INDEX IF NOT EXISTS idx_match_events_type           ON match_events(event_type);
@@ -253,6 +267,7 @@ ALTER TABLE news                 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quinielas            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quiniela_predictions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quiniela_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quiniela_fixtures     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api_request_log      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE match_events         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE match_lineups        ENABLE ROW LEVEL SECURITY;
@@ -316,8 +331,8 @@ CREATE POLICY "Admins can delete news" ON news
   );
 
 -- Quinielas
-CREATE POLICY "Public quinielas viewable by everyone" ON quinielas
-  FOR SELECT USING (is_public = true OR creator_id = auth.uid());
+CREATE POLICY "Quinielas viewable by everyone" ON quinielas
+  FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can create quinielas" ON quinielas
   FOR INSERT WITH CHECK (auth.uid() = creator_id);
 CREATE POLICY "Creators can update their quinielas" ON quinielas
@@ -326,31 +341,88 @@ CREATE POLICY "Creators can delete their quinielas" ON quinielas
   FOR DELETE USING (auth.uid() = creator_id);
 
 -- Quiniela Predictions
-CREATE POLICY "Users can view predictions in joined quinielas" ON quiniela_predictions
+CREATE POLICY "Predictions viewable by eligible users" ON quiniela_predictions
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM quiniela_participants
-      WHERE quiniela_id = quiniela_predictions.quiniela_id
-        AND (user_id = auth.uid() OR quiniela_predictions.quiniela_id IN (
-          SELECT id FROM quinielas WHERE is_public = true
-        ))
+    quiniela_predictions.quiniela_id IN (
+      SELECT id FROM quinielas WHERE is_public = true
+    )
+    OR (
+      auth.uid() IS NOT NULL AND
+      EXISTS (
+        SELECT 1 FROM quiniela_participants
+        WHERE quiniela_id = quiniela_predictions.quiniela_id
+          AND user_id = auth.uid()
+      )
+    )
+    OR (
+      quiniela_predictions.user_id IS NULL AND
+      EXISTS (
+        SELECT 1 FROM quiniela_participants
+        WHERE id = quiniela_predictions.participant_id AND user_id IS NULL
+      )
     )
   );
-CREATE POLICY "Users can insert their own predictions" ON quiniela_predictions
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own predictions" ON quiniela_predictions
-  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Auth users can insert own predictions" ON quiniela_predictions
+  FOR INSERT WITH CHECK (
+    auth.uid() IS NOT NULL AND
+    quiniela_predictions.user_id = auth.uid() AND
+    EXISTS (
+      SELECT 1 FROM quiniela_participants
+      WHERE id = quiniela_predictions.participant_id AND user_id = auth.uid()
+    )
+  );
+CREATE POLICY "Guests can insert own predictions" ON quiniela_predictions
+  FOR INSERT WITH CHECK (
+    quiniela_predictions.user_id IS NULL AND
+    EXISTS (
+      SELECT 1 FROM quiniela_participants
+      WHERE id = quiniela_predictions.participant_id
+        AND user_id IS NULL AND guest_name IS NOT NULL
+    )
+  );
+CREATE POLICY "Auth users can update own predictions" ON quiniela_predictions
+  FOR UPDATE USING (
+    auth.uid() IS NOT NULL AND
+    EXISTS (
+      SELECT 1 FROM quiniela_participants
+      WHERE id = quiniela_predictions.participant_id AND user_id = auth.uid()
+    )
+  );
+CREATE POLICY "Guests can update own predictions" ON quiniela_predictions
+  FOR UPDATE USING (
+    quiniela_predictions.user_id IS NULL AND
+    EXISTS (
+      SELECT 1 FROM quiniela_participants
+      WHERE id = quiniela_predictions.participant_id
+        AND user_id IS NULL AND guest_name IS NOT NULL
+    )
+  );
 
 -- Quiniela Participants
-CREATE POLICY "Participants viewable in public quinielas" ON quiniela_participants
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM quinielas
-      WHERE id = quiniela_participants.quiniela_id AND is_public = true
-    ) OR user_id = auth.uid()
-  );
+CREATE POLICY "Participants viewable by everyone" ON quiniela_participants
+  FOR SELECT USING (true);
 CREATE POLICY "Users can join quinielas" ON quiniela_participants
   FOR INSERT WITH CHECK (auth.uid() = user_id OR guest_name IS NOT NULL);
+
+-- Quiniela Fixtures
+CREATE POLICY "Quiniela fixtures are viewable by everyone" ON quiniela_fixtures
+  FOR SELECT USING (true);
+CREATE POLICY "Creators can insert quiniela fixtures" ON quiniela_fixtures
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM quinielas
+      WHERE id = quiniela_fixtures.quiniela_id
+        AND creator_id = auth.uid()
+    )
+  );
+CREATE POLICY "Creators can delete quiniela fixtures" ON quiniela_fixtures
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM quinielas
+      WHERE id = quiniela_fixtures.quiniela_id
+        AND creator_id = auth.uid()
+    )
+  );
 
 -- API Request Log
 CREATE POLICY "Admins can view API logs" ON api_request_log
@@ -583,6 +655,7 @@ COMMENT ON TABLE news                 IS 'News articles (admin created)';
 COMMENT ON TABLE quinielas            IS 'Prediction pools';
 COMMENT ON TABLE quiniela_predictions IS 'Individual match predictions within a quiniela';
 COMMENT ON TABLE quiniela_participants IS 'Users and guests participating in quinielas';
+COMMENT ON TABLE quiniela_fixtures    IS 'Junction table linking quinielas to their included fixtures';
 COMMENT ON TABLE api_request_log      IS 'Tracks API-Football requests for rate limiting';
 COMMENT ON TABLE match_events         IS 'Goals, cards, substitutions, and VAR events per match';
 COMMENT ON TABLE match_lineups        IS 'Starting XI and substitutes per match';

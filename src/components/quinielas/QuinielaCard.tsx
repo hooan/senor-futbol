@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { QuinielaWithDetails } from '@/types/database'
 import { format } from 'date-fns'
 import Badge from '@/components/ui/Badge'
@@ -9,11 +10,12 @@ interface QuinielaCardProps {
 }
 
 export default function QuinielaCard({ quiniela }: QuinielaCardProps) {
+  const { t } = useTranslation()
   const isPastDeadline = new Date(quiniela.deadline) < new Date()
   const deadlineDate = new Date(quiniela.deadline)
 
   return (
-    <Card className="hover:shadow-brutal transition-shadow">
+    <Card className="hover:border-heavy cursor-pointer transition-all duration-150">
       <Link to={`/quinielas/${quiniela.share_code}`} className="block no-underline">
         <div className="space-y-4">
           {/* Header */}
@@ -25,11 +27,11 @@ export default function QuinielaCard({ quiniela }: QuinielaCardProps) {
               <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
                 <span className="font-mono">by @{quiniela.creator.username}</span>
                 <span>•</span>
-                <span>{quiniela.participants_count} participants</span>
+                <span>{quiniela.participants_count} {t('quinielas.participants').toLowerCase()}</span>
               </div>
             </div>
             <Badge variant={quiniela.is_public ? 'success' : 'warning'}>
-              {quiniela.is_public ? 'PUBLIC' : 'PRIVATE'}
+              {quiniela.is_public ? t('quinielas.public').toUpperCase() : t('quinielas.private').toUpperCase()}
             </Badge>
           </div>
 
@@ -42,7 +44,7 @@ export default function QuinielaCard({ quiniela }: QuinielaCardProps) {
           <div className="flex items-center justify-between pt-4 border-t-3 border-gray-200">
             <div className="flex flex-col">
               <span className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1">
-                Deadline
+                {t('quinielas.deadline')}
               </span>
               <span className={`font-mono text-sm ${isPastDeadline ? 'text-red-600' : 'text-gray-900'}`}>
                 {format(deadlineDate, 'MMM d, h:mm a')}
@@ -51,7 +53,7 @@ export default function QuinielaCard({ quiniela }: QuinielaCardProps) {
 
             <div className="flex flex-col items-end">
               <span className="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1">
-                Share Code
+                {t('quinielas.shareCode')}
               </span>
               <span className="font-mono text-sm font-bold bg-gray-100 px-3 py-1 border-3 border-gray-900">
                 {quiniela.share_code}
@@ -68,7 +70,7 @@ export default function QuinielaCard({ quiniela }: QuinielaCardProps) {
                   clipRule="evenodd"
                 />
               </svg>
-              Deadline Passed
+              {t('quinielas.deadlineHasPassed')}
             </div>
           )}
         </div>

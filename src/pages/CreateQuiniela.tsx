@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useCreateQuiniela } from '@/hooks/useQuinielas'
 import { useFixtures } from '@/hooks/useFixtures'
 import { useActiveTournament } from '@/hooks/useActiveTournament'
+import { ROUNDS } from '@/lib/constants'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
@@ -34,17 +35,17 @@ export default function CreateQuiniela() {
   // Calculate deadline based on selection
   const getDeadline = () => {
     if (!fixtures || fixtures.length === 0) return new Date().toISOString()
-    
-    // Get the first match date based on selection
+
+    // Pick the earliest relevant match
     let firstMatch = fixtures[0]
     if (formData.matchSelection === 'knockout') {
       firstMatch =
-        fixtures.find((f) => f.round === 'Round of 32') ||
-        fixtures.find((f) => f.round === 'Round of 16') ||
+        fixtures.find((f) => f.round === ROUNDS.ROUND_32) ||
+        fixtures.find((f) => f.round === ROUNDS.ROUND_16) ||
         fixtures[0]
     }
-    
-    // Deadline is 1 hour before first match
+
+    // Deadline is 1 hour before the first match
     const deadline = new Date(firstMatch.match_date)
     deadline.setHours(deadline.getHours() - 1)
     return deadline.toISOString()
@@ -53,18 +54,14 @@ export default function CreateQuiniela() {
   // Get fixture IDs based on selection
   const getFixtureIds = () => {
     if (!fixtures) return []
-    
+
     switch (formData.matchSelection) {
       case 'group-stage':
-        return fixtures
-          .filter(f => f.round === 'Group Stage')
-          .map(f => f.id)
+        return fixtures.filter((f) => f.round === ROUNDS.GROUP_STAGE).map((f) => f.id)
       case 'knockout':
-        return fixtures
-          .filter(f => f.round !== 'Group Stage')
-          .map(f => f.id)
+        return fixtures.filter((f) => f.round !== ROUNDS.GROUP_STAGE).map((f) => f.id)
       case 'all':
-        return fixtures.map(f => f.id)
+        return fixtures.map((f) => f.id)
       default:
         return []
     }
@@ -103,11 +100,11 @@ export default function CreateQuiniela() {
         userId: user.id,
         input,
       })
-      
-      // Navigate to the new quiniela
+
+      // Navigate to the new quiniela's detail page
       navigate(`/quinielas/${newQuiniela.share_code}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('quinielas.failedToSavePrediction'))
+      setError(err instanceof Error ? err.message : t('quinielas.failedToCreate'))
     }
   }
 
@@ -116,9 +113,9 @@ export default function CreateQuiniela() {
 
     switch (formData.matchSelection) {
       case 'group-stage':
-        return fixtures.filter((f) => f.round === 'Group Stage').length
+        return fixtures.filter((f) => f.round === ROUNDS.GROUP_STAGE).length
       case 'knockout':
-        return fixtures.filter((f) => f.round !== 'Group Stage').length
+        return fixtures.filter((f) => f.round !== ROUNDS.GROUP_STAGE).length
       case 'all':
         return fixtures.length
       default:
@@ -182,7 +179,7 @@ export default function CreateQuiniela() {
                 maxLength={500}
               />
               <p className="text-sm text-gray-600 mt-1">
-                {formData.description.length}/500 {t('validation.maxLength', { count: 500 }).toLowerCase()}
+                {formData.description.length} / 500
               </p>
             </div>
 

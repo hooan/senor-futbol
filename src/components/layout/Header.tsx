@@ -56,46 +56,46 @@ export default function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 border-thick border-raw-black bg-raw-white"
+            className="md:hidden p-3 min-h-[44px] min-w-[44px] border-thick border-raw-black bg-raw-white flex flex-col items-center justify-center gap-1.5"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            <div className="w-6 h-0.5 bg-raw-black mb-1"></div>
-            <div className="w-6 h-0.5 bg-raw-black mb-1"></div>
+            <div className="w-6 h-0.5 bg-raw-black"></div>
+            <div className="w-6 h-0.5 bg-raw-black"></div>
             <div className="w-6 h-0.5 bg-raw-black"></div>
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 space-y-2 border-t-thick border-raw-black">
-            <Link to="/news" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+          <nav className="md:hidden py-2 border-t-thick border-raw-black">
+            <Link to="/news" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
               {t('nav.news')}
             </Link>
-            <Link to="/fixtures" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+            <Link to="/fixtures" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
               {t('nav.fixtures')}
             </Link>
-            <Link to="/standings" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+            <Link to="/standings" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
               {t('nav.standings')}
             </Link>
-            <Link to="/quinielas" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+            <Link to="/quinielas" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
               {t('nav.quinielas')}
             </Link>
             
-            <div className="px-4 py-2">
+            <div className="px-4 py-3">
               <LanguageSelector />
             </div>
             
             {user ? (
-              <Link to="/profile" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+              <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
                 {user.user_metadata?.username || t('nav.profile')}
               </Link>
             ) : (
               <>
-                <Link to="/login" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
                   {t('nav.login')}
                 </Link>
-                <Link to="/register" className="block py-2 font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white px-4">
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="flex items-center py-3 px-4 min-h-[44px] font-body font-semibold uppercase tracking-wide text-sm hover:bg-raw-black hover:text-raw-white">
                   {t('nav.register')}
                 </Link>
               </>

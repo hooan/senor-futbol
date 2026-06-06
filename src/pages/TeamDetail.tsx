@@ -57,8 +57,8 @@ export default function TeamDetail() {
           </Button>
 
           {/* Team Info */}
-          <div className="flex items-start gap-6">
-            <div className="w-24 h-24 border-thick border-raw-black flex items-center justify-center bg-white overflow-hidden">
+          <div className="flex items-start gap-4 sm:gap-6">
+            <div className="w-16 h-16 sm:w-24 sm:h-24 flex-shrink-0 border-thick border-raw-black flex items-center justify-center bg-white overflow-hidden">
               {team.logo_url ? (
                 <img 
                   src={team.logo_url} 
@@ -66,12 +66,12 @@ export default function TeamDetail() {
                   className="w-full h-full object-contain p-2"
                 />
               ) : (
-                <span className="font-mono text-4xl">{team.code}</span>
+                <span className="font-mono text-2xl sm:text-4xl">{team.code}</span>
               )}
             </div>
 
-            <div className="flex-1">
-              <h1 className="font-headline text-5xl uppercase mb-2">{team.name}</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl uppercase mb-2 leading-tight">{team.name}</h1>
               <p className="font-mono text-sm text-gray-600 uppercase">{t('teams.countryCode')}: {team.code}</p>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function TeamDetail() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Statistics Overview */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
           {/* Matches Played */}
           <Card variant="elevated">
             <p className="font-mono text-xs uppercase text-gray-600 mb-2">{t('teams.matchesPlayed')}</p>
@@ -164,7 +164,7 @@ export default function TeamDetail() {
                 return (
                   <div
                     key={fixture.id}
-                    className={`flex items-center justify-between p-4 border-thin cursor-pointer hover:border-thick transition-all ${
+                    className={`flex items-center gap-3 p-3 sm:p-4 border-thin cursor-pointer hover:border-thick transition-all ${
                       result === 'win'
                         ? 'border-green-300 bg-green-50'
                         : result === 'loss'
@@ -175,44 +175,47 @@ export default function TeamDetail() {
                     }`}
                     onClick={() => navigate(`/fixtures/${fixture.id}`)}
                   >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="text-center min-w-[80px]">
-                        <p className="font-mono text-xs text-gray-600">
-                          {format(new Date(fixture.match_date), 'MMM d')}
-                        </p>
-                        <p className="font-mono text-tiny text-gray-500">
-                          {format(new Date(fixture.match_date), 'HH:mm')}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <span className="font-body text-sm">{isHome ? t('teams.vs') : t('teams.at')}</span>
-                        <div className="w-10 h-10 border-thin border-raw-black flex items-center justify-center bg-white overflow-hidden">
-                          {opponent.logo_url ? (
-                            <img 
-                              src={opponent.logo_url} 
-                              alt={opponent.name}
-                              className="w-full h-full object-contain p-1"
-                            />
-                          ) : (
-                            <span className="font-mono text-xs">{opponent.code}</span>
-                          )}
-                        </div>
-                        <span className="font-body font-semibold">{opponent.name}</span>
-                      </div>
+                    {/* Date */}
+                    <div className="text-center flex-shrink-0 w-12 sm:w-[72px]">
+                      <p className="font-mono text-xs text-gray-600">
+                        {format(new Date(fixture.match_date), 'MMM d')}
+                      </p>
+                      <p className="font-mono text-tiny text-gray-500">
+                        {format(new Date(fixture.match_date), 'HH:mm')}
+                      </p>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    {/* Opponent */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="font-body text-xs sm:text-sm flex-shrink-0 text-gray-500">
+                        {isHome ? t('teams.vs') : t('teams.at')}
+                      </span>
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 border-thin border-raw-black flex items-center justify-center bg-white overflow-hidden">
+                        {opponent.logo_url ? (
+                          <img
+                            src={opponent.logo_url}
+                            alt={opponent.name}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        ) : (
+                          <span className="font-mono text-xs">{opponent.code}</span>
+                        )}
+                      </div>
+                      <span className="font-body text-sm font-semibold truncate">{opponent.name}</span>
+                    </div>
+
+                    {/* Score + Badge */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {fixture.status === 'FT' ? (
                         <>
-                          <div className="text-right">
-                            <span className="font-headline text-2xl">
-                              {teamScore} - {opponentScore}
-                            </span>
-                          </div>
-                          {result === 'win' && <Badge variant="success">{t('teams.win')}</Badge>}
-                          {result === 'draw' && <Badge variant="warning">{t('teams.draw')}</Badge>}
-                          {result === 'loss' && <Badge variant="error">{t('teams.loss')}</Badge>}
+                          <span className="font-headline text-xl sm:text-2xl whitespace-nowrap">
+                            {teamScore} - {opponentScore}
+                          </span>
+                          <span className="hidden sm:inline-flex">
+                            {result === 'win' && <Badge variant="success">{t('teams.win')}</Badge>}
+                            {result === 'draw' && <Badge variant="warning">{t('teams.draw')}</Badge>}
+                            {result === 'loss' && <Badge variant="error">{t('teams.loss')}</Badge>}
+                          </span>
                         </>
                       ) : (
                         <Badge variant="default">{fixture.status}</Badge>

@@ -84,11 +84,15 @@ export function useQuinielaFixtures(quinielaId: string | undefined) {
 }
 
 // Get user's predictions
-export function useUserPredictions(quinielaId: string | undefined, userId: string | null) {
+export function useUserPredictions(
+  quinielaId: string | undefined,
+  userId: string | null,
+  guestToken?: string | null
+) {
   return useQuery({
-    queryKey: quinielaKeys.predictions(quinielaId || '', userId),
-    queryFn: () => quinielaService.getUserPredictions(quinielaId!, userId),
-    enabled: !!quinielaId,
+    queryKey: quinielaKeys.predictions(quinielaId || '', userId ?? guestToken ?? null),
+    queryFn: () => quinielaService.getUserPredictions(quinielaId!, userId, guestToken),
+    enabled: !!quinielaId && (!!userId || !!guestToken),
   })
 }
 
@@ -146,11 +150,19 @@ export function useMakePrediction() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, input }: { userId: string | null; input: MakePredictionInput }) =>
-      quinielaService.makePrediction(userId, input),
+    mutationFn: ({
+      userId,
+      guestToken,
+      input,
+    }: {
+      userId: string | null
+      guestToken?: string | null
+      input: MakePredictionInput
+    }) => quinielaService.makePrediction(userId, guestToken ?? null, input),
     onSuccess: (_, variables) => {
+      const identity = variables.userId ?? variables.guestToken ?? null
       queryClient.invalidateQueries({
-        queryKey: quinielaKeys.predictions(variables.input.quiniela_id, variables.userId),
+        queryKey: quinielaKeys.predictions(variables.input.quiniela_id, identity),
       })
       queryClient.invalidateQueries({
         queryKey: quinielaKeys.leaderboard(variables.input.quiniela_id),
