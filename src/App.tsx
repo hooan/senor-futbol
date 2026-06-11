@@ -1,9 +1,11 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import ToastContainer from '@/components/ui/ToastContainer'
+import Loading from '@/components/ui/Loading'
 
 // Layout
 import Layout from '@/components/layout/Layout'
@@ -12,33 +14,35 @@ import Layout from '@/components/layout/Layout'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import AdminRoute from '@/components/auth/AdminRoute'
 
-// Pages
-import Home from '@/pages/Home'
-import UIPreview from '@/pages/UIPreview'
-import Fixtures from '@/pages/Fixtures'
-import TodayMatches from '@/pages/TodayMatches'
-import MatchDetail from '@/pages/MatchDetail'
-import TeamDetail from '@/pages/TeamDetail'
-import Standings from '@/pages/Standings'
-import News from '@/pages/News'
-import NewsDetail from '@/pages/NewsDetail'
-import Login from '@/pages/Login'
-import Register from '@/pages/Register'
-import Profile from '@/pages/Profile'
-import Quinielas from '@/pages/Quinielas'
-import CreateQuiniela from '@/pages/CreateQuiniela'
-import QuinielaDetail from '@/pages/QuinielaDetail'
-import Predictions from '@/pages/Predictions'
-import Leaderboard from '@/pages/Leaderboard'
-import AdminDashboard from '@/pages/admin/AdminDashboard'
-import AdminNews from '@/pages/admin/AdminNews'
-import AdminNewsForm from '@/pages/admin/AdminNewsForm'
-import AdminUsers from '@/pages/admin/AdminUsers'
-import AdminTournaments from '@/pages/admin/AdminTournaments'
-import AdminNewsSources from '@/pages/admin/AdminNewsSources'
-import AdminSettings from '@/pages/admin/AdminSettings'
-import AdminFixtures from '@/pages/admin/AdminFixtures'
-import AdminRosters from '@/pages/admin/AdminRosters'
+// Pages — lazy loaded for code splitting
+const Home = lazy(() => import('@/pages/Home'))
+const UIPreview = lazy(() => import('@/pages/UIPreview'))
+const Fixtures = lazy(() => import('@/pages/Fixtures'))
+const TodayMatches = lazy(() => import('@/pages/TodayMatches'))
+const MatchDetail = lazy(() => import('@/pages/MatchDetail'))
+const TeamDetail = lazy(() => import('@/pages/TeamDetail'))
+const Standings = lazy(() => import('@/pages/Standings'))
+const News = lazy(() => import('@/pages/News'))
+const NewsDetail = lazy(() => import('@/pages/NewsDetail'))
+const Login = lazy(() => import('@/pages/Login'))
+const Register = lazy(() => import('@/pages/Register'))
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'))
+const Profile = lazy(() => import('@/pages/Profile'))
+const Quinielas = lazy(() => import('@/pages/Quinielas'))
+const CreateQuiniela = lazy(() => import('@/pages/CreateQuiniela'))
+const QuinielaDetail = lazy(() => import('@/pages/QuinielaDetail'))
+const Predictions = lazy(() => import('@/pages/Predictions'))
+const Leaderboard = lazy(() => import('@/pages/Leaderboard'))
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
+const AdminNews = lazy(() => import('@/pages/admin/AdminNews'))
+const AdminNewsForm = lazy(() => import('@/pages/admin/AdminNewsForm'))
+const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
+const AdminTournaments = lazy(() => import('@/pages/admin/AdminTournaments'))
+const AdminNewsSources = lazy(() => import('@/pages/admin/AdminNewsSources'))
+const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'))
+const AdminFixtures = lazy(() => import('@/pages/admin/AdminFixtures'))
+const AdminRosters = lazy(() => import('@/pages/admin/AdminRosters'))
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -58,6 +62,11 @@ function App() {
           <ToastProvider>
             <BrowserRouter>
               <ToastContainer />
+              <Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <Loading />
+                </div>
+              }>
               <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
@@ -92,6 +101,8 @@ function App() {
             {/* Auth Routes */}
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
             <Route path="profile" element={
               <ProtectedRoute>
                 <Profile />
@@ -157,6 +168,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </ToastProvider>
   </AuthProvider>

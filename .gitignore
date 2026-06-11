@@ -46,7 +46,9 @@ docs
 .opencode/*
 ./copilot/*
 .github/agents/*
+.understand-anything/*
 
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
 pnpm-lock.yaml

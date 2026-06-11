@@ -40,8 +40,16 @@ function GroupTable({ group, standings }: GroupTableProps) {
                 <td className="py-3 px-2 font-mono text-sm font-bold">{standing.rank}</td>
                 <td className="py-3 px-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 border-thin border-raw-black flex items-center justify-center">
-                      <span className="font-mono text-tiny">{standing.team.code}</span>
+                    <div className="w-6 h-6 border-thin border-raw-black flex items-center justify-center bg-white overflow-hidden flex-shrink-0">
+                      {standing.team.logo_url ? (
+                        <img
+                          src={standing.team.logo_url}
+                          alt={standing.team.name}
+                          className="w-full h-full object-contain p-0.5"
+                        />
+                      ) : (
+                        <span className="font-mono text-tiny">{standing.team.code}</span>
+                      )}
                     </div>
                     <span className="font-body text-sm font-semibold">{standing.team.name}</span>
                   </div>

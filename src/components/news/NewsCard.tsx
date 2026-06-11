@@ -12,6 +12,11 @@ interface NewsCardProps {
 export default function NewsCard({ news, featured = false }: NewsCardProps) {
   const publishedDate = news.published_at ? new Date(news.published_at) : new Date()
   const dateStr = format(publishedDate, 'MMMM d, yyyy')
+  const authorName = news.author?.username?.trim() || ''
+  const normalizedAuthor = authorName.toLowerCase()
+  const showAuthor = Boolean(
+    authorName && !['anonymous', 'anonimous', 'anonimo', 'anónimo'].includes(normalizedAuthor)
+  )
   
   return (
     <Link to={`/news/${news.id}`} className="block no-underline">
@@ -44,8 +49,12 @@ export default function NewsCard({ news, featured = false }: NewsCardProps) {
           {/* Footer */}
           <div className="pt-3 border-t-thin border-gray-300 flex justify-between items-center">
             <div className="font-mono text-xs text-gray-600">
-              <span className="uppercase">{news.author?.username || 'Anonymous'}</span>
-              <span className="mx-2">•</span>
+              {showAuthor && (
+                <>
+                  <span className="uppercase">{authorName}</span>
+                  <span className="mx-2">•</span>
+                </>
+              )}
               <span>{dateStr}</span>
             </div>
             <div className="font-body text-sm text-raw-blue uppercase font-semibold">

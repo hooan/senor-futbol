@@ -28,7 +28,7 @@ export function useNews() {
 // Get published news only (public use) - filtered by current language
 export function usePublishedNews() {
   const { i18n } = useTranslation()
-  const currentLanguage = i18n.language || 'en'
+  const currentLanguage = i18n.language || 'es'
 
   return useQuery({
     queryKey: ['news', 'published', currentLanguage],
@@ -76,7 +76,7 @@ export function useNewsArticle(id: string) {
 // Get latest news - filtered by current language
 export function useLatestNews(limit = 5) {
   const { i18n } = useTranslation()
-  const currentLanguage = i18n.language || 'en'
+  const currentLanguage = i18n.language || 'es'
 
   return useQuery({
     queryKey: ['news', 'latest', limit, currentLanguage],
@@ -115,7 +115,7 @@ export function useCreateNews() {
         .insert({
           ...newsData,
           author_id: session.user.id,
-          language: newsData.language || i18n.language || 'en',
+          language: newsData.language || i18n.language || 'es',
         })
         .select()
         .single()

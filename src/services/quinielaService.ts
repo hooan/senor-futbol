@@ -18,6 +18,48 @@ interface QuinielaRow extends Quiniela {
   quiniela_participants: Array<{ count: number }>
 }
 
+interface PredictionWithFixtureRow {
+  participant_id: string | null
+  predicted_home_score: number
+  predicted_away_score: number
+  fixture:
+    | {
+        home_score: number | null
+        away_score: number | null
+        status: string | null
+      }
+    | Array<{
+        home_score: number | null
+        away_score: number | null
+        status: string | null
+      }>
+    | null
+}
+
+interface FixtureScoreRow {
+  home_score: number | null
+  away_score: number | null
+  status: string | null
+}
+
+const toFixtureScoreRow = (
+  fixture: PredictionWithFixtureRow['fixture']
+): FixtureScoreRow | null => {
+  if (!fixture) return null
+  return Array.isArray(fixture) ? fixture[0] ?? null : fixture
+}
+
+interface PredictionWithFixtureDataRow {
+  participant_id: string | null
+  predicted_home_score: number
+  predicted_away_score: number
+  fixture: {
+    home_score: number | null
+    away_score: number | null
+    status: string | null
+  }[]
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const QUINIELA_SELECT = `
@@ -106,6 +148,51 @@ export const calculatePredictionPoints = (
   }
 
   return points
+}
+
+const getParticipantScoreAndCountMaps = async (quinielaId: string) => {
+  const { data, error } = await supabase
+    .from('quiniela_predictions')
+    .select(`
+      participant_id,
+      predicted_home_score,
+      predicted_away_score,
+      fixture:fixtures!quiniela_predictions_fixture_id_fkey(home_score, away_score, status)
+    `)
+    .eq('quiniela_id', quinielaId)
+
+  if (error) throw error
+
+  const totalPointsByParticipant = new Map<string, number>()
+  const predictionCountByParticipant = new Map<string, number>()
+
+  for (const row of (data || []) as PredictionWithFixtureDataRow[]) {
+    if (!row.participant_id) continue
+
+    predictionCountByParticipant.set(
+      row.participant_id,
+      (predictionCountByParticipant.get(row.participant_id) ?? 0) + 1
+    )
+
+    const fixture = toFixtureScoreRow(row.fixture)
+    const isFinished = fixture?.status === 'FT'
+    const hasFinalScore = fixture?.home_score !== null && fixture?.away_score !== null
+    if (!isFinished || !hasFinalScore) continue
+
+    const points = calculatePredictionPoints(
+      row.predicted_home_score,
+      row.predicted_away_score,
+      fixture.home_score as number,
+      fixture.away_score as number
+    )
+
+    totalPointsByParticipant.set(
+      row.participant_id,
+      (totalPointsByParticipant.get(row.participant_id) ?? 0) + points
+    )
+  }
+
+  return { totalPointsByParticipant, predictionCountByParticipant }
 }
 
 // ─── Quiniela Service ──────────────────────────────────────────────────────────
@@ -258,17 +345,26 @@ export const quinielaService = {
 
   /** All participants in a quiniela, sorted by total_points descending. */
   async getParticipants(quinielaId: string): Promise<QuinielaParticipant[]> {
-    const { data, error } = await supabase
+    const [participantsResult, scoreData] = await Promise.all([
+      supabase
       .from('quiniela_participants')
       .select(`
         id, quiniela_id, user_id, guest_name, joined_at, total_points,
         user:users!quiniela_participants_user_id_fkey(id, username, avatar_url, is_admin, created_at)
       `)
-      .eq('quiniela_id', quinielaId)
-      .order('total_points', { ascending: false })
+      .eq('quiniela_id', quinielaId),
+      getParticipantScoreAndCountMaps(quinielaId),
+    ])
 
-    if (error) throw error
-    return (data as unknown as QuinielaParticipant[]) || []
+    if (participantsResult.error) throw participantsResult.error
+
+    const participants = ((participantsResult.data as unknown as QuinielaParticipant[]) || []).map((p) => ({
+      ...p,
+      total_points: scoreData.totalPointsByParticipant.get(p.id) ?? 0,
+    }))
+
+    participants.sort((a, b) => b.total_points - a.total_points)
+    return participants
   },
 
   /** Returns true if the given user is already a participant. */
@@ -386,7 +482,7 @@ export const quinielaService = {
    * Participants sorted by total_points DESC; prediction counts joined in TypeScript.
    */
   async getLeaderboard(quinielaId: string): Promise<LeaderboardEntry[]> {
-    const [participantsResult, predsResult] = await Promise.all([
+    const [participantsResult, scoreData] = await Promise.all([
       supabase
         .from('quiniela_participants')
         .select(`
@@ -397,37 +493,26 @@ export const quinielaService = {
           total_points,
           user:users!quiniela_participants_user_id_fkey(id, username, avatar_url, is_admin, created_at)
         `)
-        .eq('quiniela_id', quinielaId)
-        .order('total_points', { ascending: false }),
-
-      supabase
-        .from('quiniela_predictions')
-        .select('participant_id')
         .eq('quiniela_id', quinielaId),
+      getParticipantScoreAndCountMaps(quinielaId),
     ])
 
     if (participantsResult.error) throw participantsResult.error
-    if (predsResult.error) throw predsResult.error
 
-    // Count predictions per participant_id
-    const predCountMap = new Map<string, number>()
-    for (const pred of predsResult.data || []) {
-      if (pred.participant_id) {
-        predCountMap.set(
-          pred.participant_id as string,
-          (predCountMap.get(pred.participant_id as string) ?? 0) + 1
-        )
-      }
-    }
+    const sortedParticipants = [...(participantsResult.data || [])].sort((a, b) => {
+      const aPoints = scoreData.totalPointsByParticipant.get(a.id as string) ?? 0
+      const bPoints = scoreData.totalPointsByParticipant.get(b.id as string) ?? 0
+      return bPoints - aPoints
+    })
 
-    return (participantsResult.data || []).map((p, index) => ({
+    return sortedParticipants.map((p, index) => ({
       id: p.id as string,
       quiniela_id: p.quiniela_id as string,
       user_id: p.user_id as string | null,
       guest_name: p.guest_name as string | null,
       user: p.user as unknown as User | undefined,
-      total_points: p.total_points as number,
-      predictions_count: predCountMap.get(p.id as string) ?? 0,
+      total_points: scoreData.totalPointsByParticipant.get(p.id as string) ?? 0,
+      predictions_count: scoreData.predictionCountByParticipant.get(p.id as string) ?? 0,
       rank: index + 1,
     }))
   },

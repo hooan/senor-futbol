@@ -72,6 +72,12 @@ export default function Login() {
               disabled={loading}
             />
 
+            <div className="text-right -mt-2">
+              <Link to="/forgot-password" className="text-sm text-raw-blue font-semibold hover:underline">
+                {t('auth.forgotPassword')}
+              </Link>
+            </div>
+
             <Button
               type="submit"
               variant="primary"

@@ -411,7 +411,21 @@
     "passwordMinLength": "La contraseña debe tener al menos {{count}} caracteres",
     "usernameMinLength": "El nombre de usuario debe tener al menos {{count}} caracteres",
     "failedToSignIn": "Error al iniciar sesión",
-    "failedToCreateAccount": "Error al crear la cuenta"
+    "failedToCreateAccount": "Error al crear la cuenta",
+    "forgotPasswordPrompt": "Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña",
+    "sendResetEmail": "Enviar Correo de Restablecimiento",
+    "sendingResetEmail": "Enviando Correo de Restablecimiento...",
+    "resetEmailSent": "Si la cuenta existe, enviamos un correo para restablecer la contraseña.",
+    "failedToSendResetEmail": "Error al enviar el correo de restablecimiento",
+    "backToLogin": "Volver al Inicio de Sesión",
+    "resetPassword": "Restablecer Contraseña",
+    "resetPasswordPrompt": "Define tu nueva contraseña para continuar",
+    "updatePassword": "Actualizar Contraseña",
+    "updatingPassword": "Actualizando Contraseña...",
+    "passwordUpdated": "Contraseña actualizada con éxito. Redirigiendo al inicio de sesión...",
+    "failedToResetPassword": "Error al restablecer la contraseña",
+    "resetLinkInvalid": "Este enlace de restablecimiento es inválido o expiró.",
+    "requestNewResetLink": "Solicitar un nuevo enlace"
   },
   "validation": {
     "required": "Este campo es obligatorio",

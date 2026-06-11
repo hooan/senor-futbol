@@ -412,7 +412,21 @@
     "passwordMinLength": "Password must be at least {{count}} characters",
     "usernameMinLength": "Username must be at least {{count}} characters",
     "failedToSignIn": "Failed to sign in",
-    "failedToCreateAccount": "Failed to create account"
+    "failedToCreateAccount": "Failed to create account",
+    "forgotPasswordPrompt": "Enter your email and we will send you a password reset link",
+    "sendResetEmail": "Send Reset Email",
+    "sendingResetEmail": "Sending Reset Email...",
+    "resetEmailSent": "If that account exists, we sent a password reset email.",
+    "failedToSendResetEmail": "Failed to send reset email",
+    "backToLogin": "Back to Login",
+    "resetPassword": "Reset Password",
+    "resetPasswordPrompt": "Set your new password to continue",
+    "updatePassword": "Update Password",
+    "updatingPassword": "Updating Password...",
+    "passwordUpdated": "Password updated successfully. Redirecting to login...",
+    "failedToResetPassword": "Failed to reset password",
+    "resetLinkInvalid": "This reset link is invalid or expired.",
+    "requestNewResetLink": "Request a new reset link"
   },
   "validation": {
     "required": "This field is required",

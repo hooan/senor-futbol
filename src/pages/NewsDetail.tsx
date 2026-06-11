@@ -10,6 +10,12 @@ export default function NewsDetail() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const { data: news, isLoading } = useNewsArticle(id || '')
+
+  const isAnonymousAuthor = (username?: string) => {
+    if (!username) return true
+    const normalized = username.trim().toLowerCase()
+    return ['anonymous', 'anonimous', 'anonimo', 'anónimo'].includes(normalized)
+  }
   
   if (isLoading) {
     return (
@@ -41,6 +47,7 @@ export default function NewsDetail() {
   
   const publishedDate = news.published_at ? new Date(news.published_at) : new Date()
   const dateStr = format(publishedDate, 'MMMM d, yyyy')
+  const showAuthor = news.author && !isAnonymousAuthor(news.author.username)
   
   return (
     <div className="min-h-screen bg-raw-white">
@@ -60,7 +67,18 @@ export default function NewsDetail() {
             {news.source_name && (
               <>
                 <div className="flex items-center gap-2">
-                  <span className="uppercase font-semibold">{news.source_name}</span>
+                  {news.source_url ? (
+                    <a
+                      href={news.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="uppercase font-semibold text-raw-blue hover:underline"
+                    >
+                      {news.source_name}
+                    </a>
+                  ) : (
+                    <span className="uppercase font-semibold">{news.source_name}</span>
+                  )}
                 </div>
                 <span>•</span>
               </>
@@ -68,7 +86,7 @@ export default function NewsDetail() {
             {/* Date */}
             <div>{dateStr}</div>
             {/* Author (if manually created) */}
-            {news.author && !news.source_name && (
+            {showAuthor && !news.source_name && (
               <>
                 <span>•</span>
                 <div className="flex items-center gap-2">
